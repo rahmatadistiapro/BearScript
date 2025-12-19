@@ -78,11 +78,10 @@ void make_token(Lexer* lexer, Token* token) {
         advance(lexer);
         return;
     }
-    else {
-        token->type = T_UNKNOWN;
-        token->value = malloc(2);
-        token->value[0] = current_char;
-        token->value[1] = '\0';  // REQUIRED
-        advance(lexer);
-    }
+    
+    token->type = T_UNKNOWN;
+    token->value = malloc(2);
+    token->value[0] = current_char;
+    token->value[1] = '\0';  // REQUIRED
+    advance(lexer);
 };
