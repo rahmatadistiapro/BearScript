@@ -5,7 +5,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-enum TokenType {
+typedef enum {
     T_GROWL,
     T_INTEGER,
     T_FLOAT,
@@ -17,12 +17,14 @@ enum TokenType {
     T_MODULO,
     T_LPAREN,
     T_RPAREN,
+    T_EQUAL,
+    T_ASSIGN,
     T_UNKNOWN,
     T_EOF
-};
+} TokenType;
 
 typedef struct {
-    enum TokenType type;
+    TokenType type;
     char* value;
 } Token;
 

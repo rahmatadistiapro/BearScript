@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <string.h>
 #include "Token.h"
 #include "Lexer.h"
 
@@ -16,13 +17,12 @@ static void lex_number(Lexer* lexer, Token* token) {
         }
         advance(lexer);
     }
+
     int length = lexer->position - start_pos;
-
-    token->type = has_dot ? T_FLOAT : T_INTEGER;
     token->value = (char*)malloc(length + 1);
-
     memcpy(token->value, lexer->source + start_pos, length);
     token->value[length] = '\0';
+    token->type = has_dot ? T_FLOAT : T_INTEGER;
 }
 
 void lexer_init(Lexer* lexer, const char* source) {
@@ -52,36 +52,32 @@ void skip_whitespace(Lexer* lexer) {
 
 void make_token(Lexer* lexer, Token* token) {
     skip_whitespace(lexer);
-    char current_char = lexer->current_char;
 
-    // clean previous value
-    if (token->value) {
-        free(token->value);
-        token->value = NULL;
-    }
-
-    if (current_char == '\0') {
+    if (lexer->current_char == '\0') {
         token->type = T_EOF;
-        token->value = NULL;
+        token->value = _strdup("EOF");
         return;
     }
 
-    if (isdigit(current_char)) {
+    if (isdigit(lexer->current_char)) {
         lex_number(lexer, token);
         return;
     }
-    else if (current_char == '+') {
-        token->type = T_ADD;
-        token->value = malloc(2);
-        token->value[0] = current_char;
-        token->value[1] = '\0';  // REQUIRED
-        advance(lexer);
-        return;
-    }
-    
-    token->type = T_UNKNOWN;
-    token->value = malloc(2);
-    token->value[0] = current_char;
-    token->value[1] = '\0';  // REQUIRED
+    char c = lexer->current_char;
     advance(lexer);
+
+    token->value = (char*)malloc(2);
+    token->value[0] = c;
+    token->value[1] = '\0';
+
+    switch (c) {
+        case '+': token->type = T_ADD; break;
+        case '-': token->type = T_SUBTRACT; break;
+        case '*': token->type = T_MUL; break;
+        case '/': token->type = T_DIVIDE; break;
+        case '%': token->type = T_MODULO; break;
+        case '(': token->type = T_LPAREN; break;
+        case ')': token->type = T_RPAREN; break;
+        default: token->type = T_UNKNOWN; break;
+    }
 };
