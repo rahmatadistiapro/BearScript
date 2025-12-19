@@ -18,7 +18,6 @@ typedef enum {
     T_LPAREN,
     T_RPAREN,
     T_EQUAL,
-    T_ASSIGN,
     T_UNKNOWN,
     T_EOF
 } TokenType;
