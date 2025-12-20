@@ -11,7 +11,20 @@ Goals: to be fun, helpful, make people laugh, teach about coding, and make peopl
 it is designed to be fun not some serious politics or group meeting in the mailing lists i want to give happiness not learning the programming for you to get a job then money just pure happiness
 
 ## Syntax Idea:
-comments:
+## datatypes:
+### string:
+"" and ''
+
+### integer:
+1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+
+### float:
+1.0, 2.5, 3.14
+
+### boolean:
+true, false
+ 
+## comments:
 // <- this is a comment
 
 ## printing:
@@ -19,7 +32,8 @@ growl value; // also ; is optional
 
 ## var declaration:
 dynamic version: name = "John"
-static version: var name: string32 or string64 = "John"
+static mutable version: let age: int = 25;
+static immutable version: let const name: str = "John"
 
 ## control flow
 if condition
