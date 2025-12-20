@@ -6,20 +6,22 @@
 #include "string.h"
 
 typedef enum {
-    T_GROWL,
-    T_INTEGER,
-    T_FLOAT,
-    T_STRING,
-    T_ADD,
-    T_SUBTRACT,
-    T_MUL,
-    T_DIVIDE,
-    T_MODULO,
-    T_LPAREN,
-    T_RPAREN,
-    T_EQUAL,
-    T_UNKNOWN,
-    T_EOF
+    T_GROWL, // growl value; -> ; optional
+    T_INTEGER, // 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+    T_FLOAT, // 1.0, 2.5, 3.14
+    T_STRING, // "hello", 'world'
+    T_ADD, // +
+    T_SUBTRACT, // -
+    T_MUL, // *
+    T_DIVIDE, // /
+    T_MODULO, // %
+    T_LPAREN, // (
+    T_RPAREN, // )
+    T_ASSIGN, // =
+    T_EQUAL, // ==
+    T_IDENTIFIER, // variable names
+    T_UNKNOWN, // unknown token
+    T_EOF // end of file
 } TokenType;
 
 typedef struct {
