@@ -1,9 +1,11 @@
 #include <ctype.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "Token.h"
 #include "Lexer.h"
 
 static void lex_number(Lexer* lexer, Token* token);
+static void lex_identifier(Lexer* lexer, Token* token);
 
 static void lex_number(Lexer* lexer, Token* token) {
     int start_pos = lexer->position;
@@ -23,6 +25,18 @@ static void lex_number(Lexer* lexer, Token* token) {
     memcpy(token->value, lexer->source + start_pos, length);
     token->value[length] = '\0';
     token->type = has_dot ? T_FLOAT : T_INTEGER;
+}
+
+static void lex_identifier(Lexer* lexer, Token* token) {
+    int start_pos = lexer->position;
+    while (isalnum(lexer->current_char) || lexer->current_char == '_') {
+        advance(lexer);
+    }
+    int length = lexer->position - start_pos;
+    token->value = (char*)malloc(length + 1);
+    memcpy(token->value, lexer->source + start_pos, length);
+    token->value[length] = '\0';
+    token->type = T_IDENTIFIER;
 }
 
 void lexer_init(Lexer* lexer, const char* source) {
@@ -59,10 +73,17 @@ void make_token(Lexer* lexer, Token* token) {
         return;
     }
 
+    if (isalpha(lexer->current_char) || lexer->current_char == '_') {
+        skip_whitespace(lexer);
+        lex_identifier(lexer, token);
+        return;
+    }
+
     if (isdigit(lexer->current_char)) {
         lex_number(lexer, token);
         return;
     }
+
     char c = lexer->current_char;
     advance(lexer);
 
@@ -78,6 +99,7 @@ void make_token(Lexer* lexer, Token* token) {
         case '%': token->type = T_MODULO; break;
         case '(': token->type = T_LPAREN; break;
         case ')': token->type = T_RPAREN; break;
+        case '=': token->type = T_ASSIGN; break;
         default: token->type = T_UNKNOWN; break;
     }
 };
