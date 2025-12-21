@@ -18,15 +18,22 @@ typedef struct ASTNode {
             char* var_name;
             struct ASTNode* value;
         } assign;
-        double number;     // for integer or float
-        char* string;      // for string literals
-        char* var_name;    // for variable references
+        struct {           // for values
+            union {
+                long int_val;    // Separate int and float!
+                double float_val;
+                char* str_val;
+            };
+        } value;
+        struct {           // for variable references
+            char* var_name;
+        } variable;
         struct {           // for binary operations
             struct ASTNode* left;
             TokenType op;
             struct ASTNode* right;
         } binary_op;
-    };
+    } data;  // Give the union a name!
 } ASTNode;
 
 #endif // AST_H

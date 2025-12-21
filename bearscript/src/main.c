@@ -24,6 +24,12 @@ int main() {
         ASTNode* tree = parse_line(&parser);
 
         double result = eval(tree, &table);
+        printf("AST Enum values:\n");
+        printf("  AST_INTEGER = %d\n", AST_INTEGER);
+        printf("  AST_FLOAT = %d\n", AST_FLOAT);
+        printf("  AST_VARIABLE = %d\n", AST_VARIABLE);
+        printf("  AST_ASSIGN = %d\n", AST_ASSIGN);
+        printf("  AST_BINARY_OP = %d\n", AST_BINARY_OP);
         printf("%g\n", result);
     }
     free_table(&table);

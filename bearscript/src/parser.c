@@ -23,18 +23,24 @@ void parser_advance(Parser *parser) {
 
 ASTNode* parse_factor(Parser* parser) {
     Token* token = parser->current_token;
-    if (token->type == T_INTEGER ||
-        token->type == T_FLOAT) {
+    if (token->type == T_INTEGER) {
         ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-        node->type = (token->type == T_INTEGER) ? AST_INTEGER : AST_FLOAT;
-        node->number = atof(token->value);
+        node->type = AST_INTEGER;
+        node->data.value.int_val = atoi(token->value);
+        parser_advance(parser);
+        return node;
+    }
+    else if (token->type == T_FLOAT) {
+        ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+        node->type = AST_FLOAT;
+        node->data.value.float_val = atof(token->value);
         parser_advance(parser);
         return node;
     }
     else if (token->type == T_IDENTIFIER) {
         ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
         node->type = AST_VARIABLE;
-        node->var_name = _strdup(token->value);
+        node->data.variable.var_name = _strdup(token->value);
         parser_advance(parser);
         return node;
     }
@@ -64,26 +70,32 @@ ASTNode* parse_term(Parser* parser) {
             parser_advance(parser);
             if (token->type == T_MUL) {
                 ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
+                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
                 new_node->type = AST_BINARY_OP;
-                new_node->binary_op.left = node;
-                new_node->binary_op.op = T_MUL;
-                new_node->binary_op.right = parse_factor(parser);
+                printf("New node type after setting: %d\n", new_node->type);
+                new_node->data.binary_op.left = node;
+                new_node->data.binary_op.op = T_MUL;
+                new_node->data.binary_op.right = parse_factor(parser);
                 node = new_node;
             }
             else if (token->type == T_DIVIDE) {
                 ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
+                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
                 new_node->type = AST_BINARY_OP;
-                new_node->binary_op.left = node;
-                new_node->binary_op.op = T_DIVIDE;
-                new_node->binary_op.right = parse_factor(parser);
+                printf("New node type after setting: %d\n", new_node->type);
+                new_node->data.binary_op.left = node;
+                new_node->data.binary_op.op = T_DIVIDE;
+                new_node->data.binary_op.right = parse_factor(parser);
                 node = new_node;
             }
             else if (token->type == T_MODULO) {
                 ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
+                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
                 new_node->type = AST_BINARY_OP;
-                new_node->binary_op.left = node;
-                new_node->binary_op.op = T_MODULO;
-                new_node->binary_op.right = parse_factor(parser);
+                printf("New node type after setting: %d\n", new_node->type);
+                new_node->data.binary_op.left = node;
+                new_node->data.binary_op.op = T_MODULO;
+                new_node->data.binary_op.right = parse_factor(parser);
                 node = new_node;
             }
     }
@@ -91,28 +103,39 @@ ASTNode* parse_term(Parser* parser) {
 }
 
 ASTNode* parse_expression(Parser* parser) {
+    printf("DEBUG parse_expression: starting\n");
     ASTNode* node = parse_term(parser);
+    printf("DEBUG: after parse_term, token is now: %s\n",
+           parser->current_token->value);
     while (parser->current_token->type == T_ADD ||
            parser->current_token->type == T_SUBTRACT) {
+            printf("DEBUG: found operator %s\n",
+                   parser->current_token->value);
             Token* token = parser->current_token;
             parser_advance(parser);
             if (token->type == T_ADD) {
+                printf("DEBUG: Creating ADD binary op\n");
                 ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
+                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
                 new_node->type = AST_BINARY_OP;
-                new_node->binary_op.left = node;
-                new_node->binary_op.op = T_ADD;
-                new_node->binary_op.right = parse_term(parser);
+                printf("New node type after setting: %d\n", new_node->type);
+                new_node->data.binary_op.left = node;
+                new_node->data.binary_op.op = T_ADD;
+                new_node->data.binary_op.right = parse_term(parser);
                 node = new_node;
             }
             else if (token->type == T_SUBTRACT) {
                 ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
+                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
                 new_node->type = AST_BINARY_OP;
-                new_node->binary_op.left = node;
-                new_node->binary_op.op = T_SUBTRACT;
-                new_node->binary_op.right = parse_term(parser);
+                printf("New node type after setting: %d\n", new_node->type);
+                new_node->data.binary_op.left = node;
+                new_node->data.binary_op.op = T_SUBTRACT;
+                new_node->data.binary_op.right = parse_term(parser);
                 node = new_node;
             }
     }
+    printf("DEBUG parse_expression: returning node type %d\n", node->type);
     return node;
 }
 
@@ -127,8 +150,8 @@ ASTNode* parse_assignment(Parser* parser) {
 
     ASTNode* node = malloc(sizeof(ASTNode));
     node->type = AST_ASSIGN;
-    node->assign.var_name = var_name;
-    node->assign.value = value;
+    node->data.assign.var_name = var_name;
+    node->data.assign.value = value;
 
     return node;
 }
@@ -169,15 +192,15 @@ ASTNode* parse_line(Parser* parser) {
 
             ASTNode* node = malloc(sizeof(ASTNode));
             node->type = AST_ASSIGN;
-            node->assign.var_name = name;
-            node->assign.value = value;
+            node->data.assign.var_name = name;
+            node->data.assign.value = value;
             return node;
         }
 
         // Not assignment → treat as expression starting with variable
         ASTNode* left = malloc(sizeof(ASTNode));
         left->type = AST_VARIABLE;
-        left->var_name = name;
+        left->data.variable.var_name = name;
 
         return parse_expression(parser); // expression continues
     }
