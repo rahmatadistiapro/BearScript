@@ -94,7 +94,7 @@ void make_token(Lexer* lexer, Token* token) {
     switch (c) {
         case '+': token->type = T_ADD; break;
         case '-': token->type = T_SUBTRACT; break;
-        case '*': token->type = T_MUL; break;
+        case '*': token->type = T_MAUL; break;
         case '/': token->type = T_DIVIDE; break;
         case '%': token->type = T_MODULO; break;
         case '(': token->type = T_LPAREN; break;

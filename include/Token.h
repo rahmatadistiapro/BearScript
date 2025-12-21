@@ -12,7 +12,7 @@ typedef enum {
     T_STRING, // "hello", 'world'
     T_ADD, // +
     T_SUBTRACT, // -
-    T_MUL, // *
+    T_MAUL, // *
     T_DIVIDE, // /
     T_MODULO, // %
     T_LPAREN, // (
@@ -20,6 +20,8 @@ typedef enum {
     T_ASSIGN, // =
     T_EQUAL, // ==
     T_IDENTIFIER, // variable names
+    T_LET, // let keyword for static variable declaration
+    T_COLON, // :
     T_UNKNOWN, // unknown token
     T_EOF // end of file
 } TokenType;

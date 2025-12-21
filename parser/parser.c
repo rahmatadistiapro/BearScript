@@ -69,7 +69,7 @@ ASTNode* parse_term(Parser* parser) {
     
     // Keep combining with *, /, or % operators
     while (1) {
-        if (parser->current_token->type == T_MUL) {
+        if (parser->current_token->type == T_MAUL) {
             printf("Found * operator\n");
             parser_advance(parser);
             
@@ -78,7 +78,7 @@ ASTNode* parse_term(Parser* parser) {
             ASTNode* new_node = malloc(sizeof(ASTNode));
             new_node->type = AST_BINARY_OP;
             new_node->data.binary_op.left = result;
-            new_node->data.binary_op.op = T_MUL;
+            new_node->data.binary_op.op = T_MAUL;
             new_node->data.binary_op.right = right;
             
             result = new_node;

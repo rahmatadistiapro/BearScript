@@ -42,7 +42,7 @@ double eval(ASTNode* node, SymbolTable* table) {
                     printf("DEBUG eval: %f - %f = %f\n", left, right, result);
                     return result;
                 }
-                case T_MUL: {
+                case T_MAUL: {
                     double result = left * right;
                     printf("DEBUG eval: %f * %f = %f\n", left, right, result);
                     return result;
