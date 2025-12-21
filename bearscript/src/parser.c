@@ -62,81 +62,125 @@ ASTNode* parse_factor(Parser* parser) {
 }
 
 ASTNode* parse_term(Parser* parser) {
-    ASTNode* node = parse_factor(parser);
-    while (parser->current_token->type == T_MUL ||
-           parser->current_token->type == T_DIVIDE ||
-           parser->current_token->type == T_MODULO) {
-            Token* token = parser->current_token;
+    printf("\n=== parse_term (FIXED) ===\n");
+    
+    // Parse first factor
+    ASTNode* result = parse_factor(parser);
+    
+    // Keep combining with *, /, or % operators
+    while (1) {
+        if (parser->current_token->type == T_MUL) {
+            printf("Found * operator\n");
             parser_advance(parser);
-            if (token->type == T_MUL) {
-                ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
-                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
-                new_node->type = AST_BINARY_OP;
-                printf("New node type after setting: %d\n", new_node->type);
-                new_node->data.binary_op.left = node;
-                new_node->data.binary_op.op = T_MUL;
-                new_node->data.binary_op.right = parse_factor(parser);
-                node = new_node;
-            }
-            else if (token->type == T_DIVIDE) {
-                ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
-                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
-                new_node->type = AST_BINARY_OP;
-                printf("New node type after setting: %d\n", new_node->type);
-                new_node->data.binary_op.left = node;
-                new_node->data.binary_op.op = T_DIVIDE;
-                new_node->data.binary_op.right = parse_factor(parser);
-                node = new_node;
-            }
-            else if (token->type == T_MODULO) {
-                ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
-                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
-                new_node->type = AST_BINARY_OP;
-                printf("New node type after setting: %d\n", new_node->type);
-                new_node->data.binary_op.left = node;
-                new_node->data.binary_op.op = T_MODULO;
-                new_node->data.binary_op.right = parse_factor(parser);
-                node = new_node;
-            }
+            
+            ASTNode* right = parse_factor(parser);
+            
+            ASTNode* new_node = malloc(sizeof(ASTNode));
+            new_node->type = AST_BINARY_OP;
+            new_node->data.binary_op.left = result;
+            new_node->data.binary_op.op = T_MUL;
+            new_node->data.binary_op.right = right;
+            
+            result = new_node;
+        }
+        else if (parser->current_token->type == T_DIVIDE) {
+            printf("Found / operator\n");
+            parser_advance(parser);
+            
+            ASTNode* right = parse_factor(parser);
+            
+            ASTNode* new_node = malloc(sizeof(ASTNode));
+            new_node->type = AST_BINARY_OP;
+            new_node->data.binary_op.left = result;
+            new_node->data.binary_op.op = T_DIVIDE;
+            new_node->data.binary_op.right = right;
+            
+            result = new_node;
+        }
+        else if (parser->current_token->type == T_MODULO) {
+            printf("Found %% operator\n");
+            parser_advance(parser);
+            
+            ASTNode* right = parse_factor(parser);
+            
+            ASTNode* new_node = malloc(sizeof(ASTNode));
+            new_node->type = AST_BINARY_OP;
+            new_node->data.binary_op.left = result;
+            new_node->data.binary_op.op = T_MODULO;
+            new_node->data.binary_op.right = right;
+            
+            result = new_node;
+        }
+        else {
+            // No more *, /, or % operators
+            break;
+        }
     }
-    return node;
+    
+    printf("Returning term node type: %d\n", result->type);
+    return result;
 }
 
 ASTNode* parse_expression(Parser* parser) {
-    printf("DEBUG parse_expression: starting\n");
-    ASTNode* node = parse_term(parser);
-    printf("DEBUG: after parse_term, token is now: %s\n",
-           parser->current_token->value);
-    while (parser->current_token->type == T_ADD ||
-           parser->current_token->type == T_SUBTRACT) {
-            printf("DEBUG: found operator %s\n",
-                   parser->current_token->value);
-            Token* token = parser->current_token;
+    printf("\n=== parse_expression (FIXED) ===\n");
+    
+    // Parse first term
+    ASTNode* result = parse_term(parser);
+    
+    // Keep combining with + or - operators
+    while (1) {
+        // Check what operator we have (if any)
+        if (parser->current_token->type == T_ADD) {
+            printf("Found + operator\n");
+            
+            // Eat the '+'
             parser_advance(parser);
-            if (token->type == T_ADD) {
-                printf("DEBUG: Creating ADD binary op\n");
-                ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
-                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
-                new_node->type = AST_BINARY_OP;
-                printf("New node type after setting: %d\n", new_node->type);
-                new_node->data.binary_op.left = node;
-                new_node->data.binary_op.op = T_ADD;
-                new_node->data.binary_op.right = parse_term(parser);
-                node = new_node;
-            }
-            else if (token->type == T_SUBTRACT) {
-                ASTNode* new_node = (ASTNode*)malloc(sizeof(ASTNode));
-                printf("Creating binary op. Setting type to: %d\n", AST_BINARY_OP);
-                new_node->type = AST_BINARY_OP;
-                printf("New node type after setting: %d\n", new_node->type);
-                new_node->data.binary_op.left = node;
-                new_node->data.binary_op.op = T_SUBTRACT;
-                new_node->data.binary_op.right = parse_term(parser);
-                node = new_node;
-            }
+            
+            // Parse the right side
+            ASTNode* right = parse_term(parser);
+            
+            // Create new binary node: (left + right)
+            ASTNode* new_node = malloc(sizeof(ASTNode));
+            new_node->type = AST_BINARY_OP;
+            new_node->data.binary_op.left = result;
+            new_node->data.binary_op.op = T_ADD;
+            new_node->data.binary_op.right = right;
+            
+            // This becomes our new result
+            result = new_node;
+            
+            printf("Created + operation\n");
+        }
+        else if (parser->current_token->type == T_SUBTRACT) {
+            printf("Found - operator\n");
+            
+            // Eat the '-'
+            parser_advance(parser);
+            
+            // Parse the right side
+            ASTNode* right = parse_term(parser);
+            
+            // Create new binary node: (left - right)
+            ASTNode* new_node = malloc(sizeof(ASTNode));
+            new_node->type = AST_BINARY_OP;
+            new_node->data.binary_op.left = result;
+            new_node->data.binary_op.op = T_SUBTRACT;
+            new_node->data.binary_op.right = right;
+            
+            // This becomes our new result
+            result = new_node;
+            
+            printf("Created - operation\n");
+        }
+        else {
+            // No more + or - operators
+            printf("No more + or - operators. Done.\n");
+            break;
+        }
     }
-    printf("DEBUG parse_expression: returning node type %d\n", node->type);
-    return node;
+    
+    printf("Returning expression node type: %d\n", result->type);
+    return result;
 }
 
 ASTNode* parse_assignment(Parser* parser) {
@@ -181,29 +225,22 @@ TokenType parser_peek(Parser* parser) {
 
 
 ASTNode* parse_line(Parser* parser) {
+    printf("\n=== PARSE_LINE ===\n");
+    printf("Token: '%s' (type: %d)\n",
+           parser->current_token->value, parser->current_token->type);
+    
+    // Check if it's an assignment: identifier followed by '='
     if (parser->current_token->type == T_IDENTIFIER) {
-        char* name = _strdup(parser->current_token->value);
-        parser_advance(parser);
-
-        if (parser->current_token->type == T_ASSIGN) {
-            // assignment
-            parser_advance(parser);
-            ASTNode* value = parse_expression(parser);
-
-            ASTNode* node = malloc(sizeof(ASTNode));
-            node->type = AST_ASSIGN;
-            node->data.assign.var_name = name;
-            node->data.assign.value = value;
-            return node;
+        // Use parser_peek to check next token without consuming current
+        TokenType next = parser_peek(parser);
+        printf("Next token type: %d\n", next);
+        
+        if (next == T_ASSIGN) {
+            printf("It's an assignment!\n");
+            return parse_assignment(parser);
         }
-
-        // Not assignment → treat as expression starting with variable
-        ASTNode* left = malloc(sizeof(ASTNode));
-        left->type = AST_VARIABLE;
-        left->data.variable.var_name = name;
-
-        return parse_expression(parser); // expression continues
     }
-
+    
+    printf("Parsing as expression\n");
     return parse_expression(parser);
 }
