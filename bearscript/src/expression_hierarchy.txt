@@ -1,0 +1,5 @@
+line        → assignment | expression
+assignment  → IDENT '=' expression
+expression  → term ((+|-) term)*
+term        → factor ((*|/|%) factor)*
+factor      → NUMBER | IDENT | '(' expression ')'
