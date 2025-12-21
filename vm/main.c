@@ -3,35 +3,106 @@
 #include "D:/BearScript/include/eval.h"
 #include "D:/BearScript/include/symbol_table.h"
 #include <stdio.h>
+#include <string.h>
 
-int main() {
+// Helper function to process one line of BearScript code
+double process_line(const char* line, SymbolTable* table) {
+    Lexer lexer;
+    lexer_init(&lexer, line);
+    
+    Parser parser;
+    parser_init(&parser, &lexer, table);
+    
+    ASTNode* tree = parse_line(&parser);
+    double result = eval(tree, table);
+    
+    return result;
+}
+
+int main(int argc, char *argv[]) {
     SymbolTable table;
     init_table(&table);
-
-    while (1) {
-        char input[1024];
-
-        printf(">>> ");
-        if (!fgets(input, sizeof(input), stdin))
-            break;
-
-        Lexer lexer;
-        lexer_init(&lexer, input);
-
-        Parser parser;
-        parser_init(&parser, &lexer, &table);
-
-        ASTNode* tree = parse_line(&parser);
-
-        double result = eval(tree, &table);
-        printf("AST Enum values:\n");
-        printf("  AST_INTEGER = %d\n", AST_INTEGER);
-        printf("  AST_FLOAT = %d\n", AST_FLOAT);
-        printf("  AST_VARIABLE = %d\n", AST_VARIABLE);
-        printf("  AST_ASSIGN = %d\n", AST_ASSIGN);
-        printf("  AST_BINARY_OP = %d\n", AST_BINARY_OP);
-        printf("%g\n", result);
+    
+    // TEST: Print arguments
+    printf("Number of arguments: %d\n", argc);
+    for (int i = 0; i < argc; i++) {
+        printf("Argument %d: %s\n", i, argv[i]);
     }
+    
+    if (argc == 1) {
+        // REPL MODE
+        while (1) {
+            char input[1024];
+            printf(">>> ");
+            if (!fgets(input, sizeof(input), stdin))
+                break;
+            
+            double result = process_line(input, &table);
+            printf("%g\n", result);
+        }
+    } 
+    else if (argc == 2) {
+        printf("DEBUG: Processing file: %s\n", argv[1]);
+    
+        // Check for .bearscript extension
+        char* extension = strrchr(argv[1], '.');
+        if (extension == NULL || strcmp(extension, ".bearscript") != 0) {
+            printf("Error: BearScript files must have .bearscript extension\n");
+            printf("Example: program.bearscript\n");
+            free_table(&table);
+            return 1;
+        }
+    
+        FILE* file = fopen(argv[1], "r");
+        if (file == NULL) {
+            printf("Error: Cannot open file '%s'\n", argv[1]);
+            free_table(&table);
+            return 1;
+        }
+    
+        printf("=== Running BearScript file ===\n");
+    
+        char line[1024];
+        int line_number = 0;
+        
+        while (fgets(line, sizeof(line), file)) {
+            line_number++;
+            
+            // Remove newline character
+            size_t len = strlen(line);
+            if (len > 0 && line[len-1] == '\n') {
+                line[len-1] = '\0';
+            }
+            
+            // Skip empty lines
+            int is_empty = 1;
+            for (int i = 0; line[i]; i++) {
+                if (line[i] != ' ' && line[i] != '\t' && line[i] != '\r') {
+                    is_empty = 0;
+                    break;
+                }
+            }
+            
+            if (is_empty) {
+                continue;  // Skip empty lines
+            }
+            
+            // Process the line
+            printf("[Line %d] ", line_number);
+            double result = process_line(line, &table);
+            printf("→ %g\n", result);
+        }
+        
+        fclose(file);
+        printf("=== File execution complete ===\n");
+        return 0;
+    }
+    else {
+        printf("Usage: bearscript [%s.bearscript]\n", argv[1]);
+        printf("       bearscript                   (starts REPL)\n");
+        printf("       bearscript program.bearscript (runs file)\n");
+    }
+    
     free_table(&table);
     return 0;
 }
