@@ -1,7 +1,7 @@
-#include "Lexer.h"
-#include "parser.h"
-#include "eval.h"
-#include "symbol_table.h"
+#include "D:/BearScript/include/Lexer.h"
+#include "D:/BearScript/include/parser.h"
+#include "D:/BearScript/include/eval.h"
+#include "D:/BearScript/include/symbol_table.h"
 #include <stdio.h>
 
 int main() {

@@ -1,6 +1,6 @@
-#include "parser.h"
-#include "AST.h"
-#include "Token.h"
+#include "D:/BearScript/include/parser.h"
+#include "D:/BearScript/include/AST.h"
+#include "D:/BearScript/include/Token.h"
 #include <stdlib.h>
 #include <string.h>
 

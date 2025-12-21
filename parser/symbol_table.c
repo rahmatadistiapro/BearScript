@@ -1,4 +1,4 @@
-#include "symbol_table.h"
+#include "D:/BearScript/include/symbol_table.h"
 #include <string.h>
 #include <stdbool.h>
 

@@ -1,6 +1,6 @@
-#include "eval.h"
-#include "AST.h"
-#include "symbol_table.h"
+#include "D:/BearScript/include/eval.h"
+#include "D:/BearScript/include/AST.h"
+#include "D:/BearScript/include/symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 

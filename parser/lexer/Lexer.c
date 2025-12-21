@@ -1,8 +1,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "Token.h"
-#include "Lexer.h"
+#include "D:/BearScript/include/Token.h"
+#include "D:/BearScript/include/Lexer.h"
 
 static void lex_number(Lexer* lexer, Token* token);
 static void lex_identifier(Lexer* lexer, Token* token);
