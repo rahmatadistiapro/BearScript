@@ -7,6 +7,7 @@ typedef enum {
     AST_ASSIGN,
     AST_INTEGER,
     AST_FLOAT,
+    AST_GROWL_STATEMENT,
     AST_VARIABLE,
     AST_BINARY_OP
 } ASTNodeType;
@@ -14,6 +15,9 @@ typedef enum {
 typedef struct ASTNode {
     ASTNodeType type;
     union {
+        struct {           // for growl command
+            struct ASTNode* expression;
+        } growl_stmt;
         struct {           // for assignment
             char* var_name;
             struct ASTNode* value;

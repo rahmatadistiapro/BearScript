@@ -36,7 +36,13 @@ static void lex_identifier(Lexer* lexer, Token* token) {
     token->value = (char*)malloc(length + 1);
     memcpy(token->value, lexer->source + start_pos, length);
     token->value[length] = '\0';
-    token->type = T_IDENTIFIER;
+
+    // --- KEY CHANGE HERE ---
+    if (strcmp(token->value, "growl") == 0) {
+        token->type = T_GROWL;
+    } else {
+        token->type = T_IDENTIFIER;
+    }
 }
 
 void lexer_init(Lexer* lexer, const char* source) {

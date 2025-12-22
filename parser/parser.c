@@ -1,6 +1,7 @@
 #include "D:/BearScript/include/parser.h"
 #include "D:/BearScript/include/AST.h"
 #include "D:/BearScript/include/Token.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -183,6 +184,15 @@ ASTNode* parse_expression(Parser* parser) {
     return result;
 }
 
+ASTNode* parse_growl_statement(Parser* parser) {
+    printf("Parsing growl statement\n");
+    ASTNode* node = malloc(sizeof(ASTNode));
+    node->type = AST_GROWL_STATEMENT;
+    parser_advance(parser); // eat 'GROWL' token
+    node->data.growl_stmt.expression = parse_expression(parser);
+    return node;
+}
+
 ASTNode* parse_assignment(Parser* parser) {
     // IDENT already confirmed
     char* var_name = _strdup(parser->current_token->value);
@@ -239,6 +249,10 @@ ASTNode* parse_line(Parser* parser) {
             printf("It's an assignment!\n");
             return parse_assignment(parser);
         }
+    }
+    else if (parser->current_token->type == T_GROWL) {
+        printf("It's a growl statement!\n");
+        return parse_growl_statement(parser);
     }
     
     printf("Parsing as expression\n");

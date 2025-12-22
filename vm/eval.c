@@ -27,6 +27,12 @@ double eval(ASTNode* node, SymbolTable* table) {
             set_variable(table, var_name, value);
             return value;
         }
+        case AST_GROWL_STATEMENT: {
+            printf("Debug eval: Executing GROWL statement\n"); 
+            double expression_value = eval(node->data.growl_stmt.expression, table);
+            printf("Debug GROWL: %g\n", expression_value);
+            return expression_value;
+        }
         case AST_BINARY_OP: {
             printf("DEBUG eval: Evaluating binary op %d\n", node->data.binary_op.op);
             double left = eval(node->data.binary_op.left, table);

@@ -21,6 +21,7 @@ ASTNode* parse_factor(Parser* parser);
 ASTNode* parse_term(Parser* parser);
 ASTNode* parse_expression(Parser* parser);
 ASTNode* parse_assignment(Parser* parser);
+ASTNode* parse_growl_statement(Parser* parser);
 ASTNode* parse_line(Parser* parser); // entry point for a single line
 
 #endif // PARSER_H
