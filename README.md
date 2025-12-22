@@ -11,5 +11,5 @@ Goals: to be fun, helpful, make people laugh, teach about coding, and make peopl
 it is designed to be fun not some serious politics or group meeting in the mailing lists i want to give happiness not learning the programming for you to get a job then money just pure happiness
 
 and one of BearScript philosophy's are:
--- Learning Should Be Joyful --
--- Learning Should Always Teach You To Be practical --
+### -- Learning Should Be Joyful --
+### -- Learning Should Always Teach You To Be practical --
