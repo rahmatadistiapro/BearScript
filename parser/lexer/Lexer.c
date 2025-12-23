@@ -45,6 +45,34 @@ static void lex_identifier(Lexer* lexer, Token* token) {
     }
 }
 
+static void lex_string(Lexer* lexer, Token* token) {
+    char quote_char = lexer->current_char; // saves the quote type like is it " or '
+    advance(lexer);
+
+    int start_pos = lexer->position;
+    while (lexer->current_char != quote_char && lexer->current_char != '\0') {
+        advance(lexer);
+    }
+
+    if (lexer->current_char != quote_char) {
+        printf("Error: Unterminated string literal\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int length = lexer->position - start_pos;
+    if (!token->value) {
+        printf("Error: Memory allocation failed for string token\n");
+        exit(EXIT_FAILURE);
+    }
+
+    token->value = (char*)malloc(length + 1);
+    memcpy(token->value, lexer->source + start_pos, length);
+
+    token->value[length] = '\0';
+    token->type = T_STRING;
+    advance(lexer); // Skip closing quote
+}
+
 void lexer_init(Lexer* lexer, const char* source) {
     lexer->source = source;
     lexer->position = 0;
@@ -85,10 +113,17 @@ void make_token(Lexer* lexer, Token* token) {
         return;
     }
 
+    if (lexer->current_char == '"' || lexer->current_char == '\'') {
+        lex_string(lexer, token);
+        return;
+    }
+
     if (isdigit(lexer->current_char)) {
         lex_number(lexer, token);
         return;
     }
+
+    if (1) {return;}
 
     char c = lexer->current_char;
     advance(lexer);

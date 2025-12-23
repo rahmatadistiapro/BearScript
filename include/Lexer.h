@@ -16,6 +16,9 @@ typedef struct Lexer {
 
 // Function to initialize a Lexer
 void lexer_init(Lexer* lexer, const char* source);
+static void lex_string(Lexer* lexer, Token* token);
+static void lex_number(Lexer* lexer, Token* token);
+static void lex_identifier(Lexer* lexer, Token* token);
 void make_token(Lexer* lexer, Token* token);
 void advance(Lexer* lexer);
 void skip_whitespace(Lexer* lexer);

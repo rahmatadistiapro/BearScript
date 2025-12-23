@@ -7,6 +7,10 @@
 double eval(ASTNode* node, SymbolTable* table) {
     switch (node->type) {
 
+        case AST_STRING: {
+            printf("Debug: Found string literal: %s\n", node->data.string.str_val);
+            return 0.0;
+        }
         case AST_INTEGER: {
             return (double)node->data.value.int_val;
         }
@@ -29,9 +33,21 @@ double eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             printf("Debug eval: Executing GROWL statement\n"); 
-            double expression_value = eval(node->data.growl_stmt.expression, table);
-            printf("Debug GROWL: %g\n", expression_value);
-            return expression_value;
+            ASTNode* expr = node->data.growl_stmt.expression;
+            if (expr->type == AST_STRING) {
+                printf("%s\n", expr->data.string.str_val);
+                return 0.0;
+            }
+            else if (expr->type == AST_INTEGER || expr->type == AST_FLOAT) {
+                double value = eval(expr, table);
+                printf("GROWL: %f\n", value);
+                return value;
+            }
+            else {
+                double value = eval(expr, table);
+                printf("GROWL: %f\n", value);
+                return value;
+            }
         }
         case AST_BINARY_OP: {
             printf("DEBUG eval: Evaluating binary op %d\n", node->data.binary_op.op);

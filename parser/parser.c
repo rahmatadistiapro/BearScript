@@ -38,6 +38,13 @@ ASTNode* parse_factor(Parser* parser) {
         parser_advance(parser);
         return node;
     }
+    else if (token->type == T_STRING) {
+        ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+        node->type = AST_STRING;
+        node->data.string.str_val = _strdup(token->value);
+        parser_advance(parser);
+        return node;
+    }
     else if (token->type == T_IDENTIFIER) {
         ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
         node->type = AST_VARIABLE;
