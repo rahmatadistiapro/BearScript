@@ -252,32 +252,93 @@ ASTNode* parse_typed_assignment(Parser* parser, char* var_name) {
     }
     parser_advance(parser); // eat skip colon
 
-    if (parser->current_token->type != T_STRING ||
-        strcmp(parser->current_token->value, "str") != 0) {
-        printf("Error: Expected 'str' type\n");
+    if ((parser->current_token->type != T_STRING ||
+        strcmp(parser->current_token->value, "str") != 0) &&
+        (parser->current_token->type != T_INTEGER ||
+        strcmp(parser->current_token->value, "int") != 0) &&
+        (parser->current_token->type != T_FLOAT ||
+        strcmp(parser->current_token->value, "float") != 0)) {
+        printf("Error: Expected 'str', 'int', or 'float' type after colon\n");
         printf("Found token type=%d, value='%s'\n",
                parser->current_token->type,
                parser->current_token->value ? parser->current_token->value : "(null)");
         exit(EXIT_FAILURE);
     }
-    char* type_name = _strdup("str");
-    parser_advance(parser); // eat 'str'
 
-    if (parser->current_token->type != T_ASSIGN) {
-        printf("Error: Expected '=' after type declaration\n");
+    bool done = false;
+    if (parser->current_token->type == T_STRING) {
+        printf("Confirmed type token: '%s'\n", parser->current_token->value);
+        char* type_name = _strdup("str");
+        printf("Before eating type, current token type=%d, value='%s",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        parser_advance(parser); // eat 'str'
+        printf("After eating type, current token type=%d, value='%s'\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+
+        if (parser->current_token->type != T_ASSIGN) {
+            printf("Error: Expected '=' after type declaration test\n");
+            exit(EXIT_FAILURE);
+        }
+        parser_advance(parser); // eat '='
+
+        ASTNode* value = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_TYPED_ASSIGN;
+        node->data.typed_assign.var_name = var_name;
+        node->data.typed_assign.type_name = type_name;
+        node->data.typed_assign.value = value;
+
+        done = true;
+        return node;
+    }
+    else if (parser->current_token->type == T_INTEGER && !done) {
+        printf("Confirmed type token: '%s'\n", parser->current_token->value);
+        char* type_name = _strdup("int");
+        parser_advance(parser); // eat 'int'
+
+        if (parser->current_token->type != T_ASSIGN) {
+            printf("Error: Expected '=' after type declaration\n");
+            exit(EXIT_FAILURE);
+        }
+        parser_advance(parser); // eat '='
+
+        ASTNode* value = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_TYPED_ASSIGN;
+        node->data.typed_assign.var_name = var_name;
+        node->data.typed_assign.type_name = type_name;
+        node->data.typed_assign.value = value;
+
+        return node;
+    }
+    else if (parser->current_token->type == T_FLOAT && !done) {
+        printf("Confirmed type token: '%s'\n", parser->current_token->value);
+        char* type_name = _strdup("float");
+        parser_advance(parser); // eat 'float'
+
+        if (parser->current_token->type != T_ASSIGN) {
+            printf("Error: Expected '=' after type declaration\n");
+            exit(EXIT_FAILURE);
+        }
+        parser_advance(parser); // eat '='
+
+        ASTNode* value = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_TYPED_ASSIGN;
+        node->data.typed_assign.var_name = var_name;
+        node->data.typed_assign.type_name = type_name;
+        node->data.typed_assign.value = value;
+        return node;
+    }
+    else {
+        printf("Error: Unknown type in typed assignment\n");
         exit(EXIT_FAILURE);
     }
-    parser_advance(parser); // eat '='
-
-    ASTNode* value = parse_expression(parser);
-
-    ASTNode* node = malloc(sizeof(ASTNode));
-    node->type = AST_TYPED_ASSIGN;
-    node->data.typed_assign.var_name = var_name;
-    node->data.typed_assign.type_name = type_name;
-    node->data.typed_assign.value = value;
-
-    return node;
 }
 
 TokenType parser_peek(Parser* parser) {
