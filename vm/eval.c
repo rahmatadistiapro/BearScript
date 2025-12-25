@@ -2,7 +2,6 @@
 #include "D:/BearScript/include/Value.h"
 #include "D:/BearScript/include/symbol_table.h"
 #include <string.h>
-#include <stdio.h>
 
 Value eval(ASTNode* node, SymbolTable* table) {
     switch (node->type) {
@@ -53,8 +52,6 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
-            print_value(value);
-            printf("\n");
             return value;
         }
         case AST_BINARY_OP: {

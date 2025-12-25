@@ -318,7 +318,7 @@ ASTNode* parse_line(Parser* parser) {
         
         if (next == T_COLON) {
             printf("It's a typed assignment!\n");
-            return parse_assignment(parser);
+            return parse_typed_assignment(parser, var_name);
         }
         else if (next == T_ASSIGN) {
             printf("It's a dynamic assignment!\n");
