@@ -6,7 +6,7 @@
 #include <string.h>
 
 // Helper function to process one line of BearScript code
-double process_line(const char* line, SymbolTable* table) {
+Value process_line(const char* line, SymbolTable* table) {
     Lexer lexer;
     lexer_init(&lexer, line);
     
@@ -14,8 +14,8 @@ double process_line(const char* line, SymbolTable* table) {
     parser_init(&parser, &lexer, table);
     
     ASTNode* tree = parse_line(&parser);
-    double result = eval(tree, table);
-    
+    Value result = eval(tree, table);
+
     return result;
 }
 
@@ -35,10 +35,14 @@ int main(int argc, char *argv[]) {
             char input[1024];
             printf(">>> ");
             if (!fgets(input, sizeof(input), stdin))
+            {
+                printf("\n");
                 break;
+            }
             
-            double result = process_line(input, &table);
-            printf("%g\n", result);
+            Value result = process_line(input, &table);
+            print_value(result);
+            printf("\n");
         }
     } 
     else if (argc == 2) {
@@ -89,8 +93,9 @@ int main(int argc, char *argv[]) {
             
             // Process the line
             printf("[Line %d] ", line_number);
-            double result = process_line(line, &table);
-            printf("→ %g\n", result);
+            Value result = process_line(line, &table);
+            print_value(result);
+            printf("\n");
         }
         
         fclose(file);

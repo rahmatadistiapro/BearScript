@@ -1,102 +1,90 @@
 #include "D:/BearScript/include/eval.h"
 #include "D:/BearScript/include/AST.h"
 #include "D:/BearScript/include/symbol_table.h"
+#include "D:/BearScript/include/Value.h"
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
-double eval(ASTNode* node, SymbolTable* table) {
+Value eval(ASTNode* node, SymbolTable* table) {
     switch (node->type) {
-
-        case AST_STRING: {
-            printf("Debug: Found string literal: %s\n", node->data.string.str_val);
-            return 0.0;
-        }
         case AST_INTEGER: {
-            return (double)node->data.value.int_val;
+            return number_value((double)node->data.value.int_val);
         }
         case AST_FLOAT: {
-            return node->data.value.float_val;
+            return number_value(node->data.value.float_val);
+        }
+        case AST_STRING: {
+            return string_value(node->data.string.str_val);
         }
         case AST_VARIABLE: {
-            double value;
-            if (!get_variable(table, node->data.variable.var_name, &value)) {
-                printf("Error: Undefined variable '%s'\n", node->data.variable.var_name);
-                exit(1);
+            // TODO: Update get_variable to return Value
+            double num_value;
+            if (!get_variable(table, node->data.variable.var_name, &num_value)) {
+                return error_value("Undefined variable");
             }
-            return value;
+            return number_value(num_value);
         }
         case AST_ASSIGN: {
             char* var_name = node->data.assign.var_name;
-            double value = eval(node->data.assign.value, table);
-            set_variable(table, var_name, value);
+            Value value = eval(node->data.assign.value, table);
+            
+            if (is_number(value)) {
+                set_variable(table, var_name, as_number(value));
+            }
+            // TODO: Handle string assignments
             return value;
         }
         case AST_GROWL_STATEMENT: {
-            printf("Debug eval: Executing GROWL statement\n"); 
-            ASTNode* expr = node->data.growl_stmt.expression;
-            if (expr->type == AST_STRING) {
-                printf("%s\n", expr->data.string.str_val);
-                return 0.0;
-            }
-            else if (expr->type == AST_INTEGER || expr->type == AST_FLOAT) {
-                double value = eval(expr, table);
-                printf("GROWL: %f\n", value);
-                return value;
-            }
-            else {
-                double value = eval(expr, table);
-                printf("GROWL: %f\n", value);
-                return value;
-            }
+            Value value = eval(node->data.growl_stmt.expression, table);
+            print_value(value);
+            printf("\n");
+            return value;
         }
         case AST_BINARY_OP: {
-            printf("DEBUG eval: Evaluating binary op %d\n", node->data.binary_op.op);
-            double left = eval(node->data.binary_op.left, table);
-            double right = eval(node->data.binary_op.right, table);
+            Value left = eval(node->data.binary_op.left, table);
+            Value right = eval(node->data.binary_op.right, table);
+            
+            // For now, only handle numbers in math operations
+            if (!is_number(left) || !is_number(right)) {
+                return error_value("Math operations only on numbers");
+            }
+            
+            double l = as_number(left);
+            double r = as_number(right);
+            
             switch (node->data.binary_op.op) {
-                case T_ADD: {
-                    double result = left + right;
-                    printf("DEBUG eval: %f + %f = %f\n", left, right, result);
-                    return result;
+                case T_ADD:      return number_value(l + r);
+                case T_SUBTRACT: return number_value(l - r);
+                case T_MAUL:     return number_value(l * r);
+                case T_DIVIDE:   
+                    if (r == 0) return error_value("Division by zero");
+                    return number_value(l / r);
+                case T_MODULO:   
+                    if ((int)r == 0) return error_value("Modulo by zero");
+                    return number_value((int)l % (int)r);
+                default:         return error_value("Unknown operator");
+            }
+        }
+        case AST_TYPED_ASSIGN: {
+            // NEW: Handle typed assignments
+            char* var_name = node->data.typed_assign.var_name;
+            char* type_name = node->data.typed_assign.type_name;
+            Value value = eval(node->data.typed_assign.value, table);
+            
+            if (strcmp(type_name, "str") == 0) {
+                if (!is_string(value)) {
+                    return error_value("String variable requires string value");
                 }
-                case T_SUBTRACT: {
-                    double result = left - right;
-                    printf("DEBUG eval: %f - %f = %f\n", left, right, result);
-                    return result;
-                }
-                case T_MAUL: {
-                    double result = left * right;
-                    printf("DEBUG eval: %f * %f = %f\n", left, right, result);
-                    return result;
-                }
-                case T_DIVIDE: {
-                    if (right == 0) {
-                        printf("Error: Division by zero\n");
-                        exit(1);
-                    }
-                    double result = left / right;
-                    printf("DEBUG eval: %f / %f = %f\n", left, right, result);
-                    return result;
-                }
-                case T_MODULO: {
-                    if ((int)right == 0) {
-                        printf("Error: Modulo by zero\n");
-                        exit(1);
-                    }
-                    double result = (int)left % (int)right;
-                    printf("DEBUG eval: %d %% %d = %d\n", (int)left, (int)right, (int)result);
-                    return result;
-                }
-                default: {
-                    printf("Error: Unknown operator %d\n", node->data.binary_op.op);
-                    exit(1);
-                }
+                // TODO: Store string in symbol table
+                printf("Would store string: %s = %s\n", 
+                       var_name, as_string(value));
+                return value;
+            } else {
+                return error_value("Unknown type");
             }
         }
         default: {
-            printf("Error: Unknown AST node type %d\n", node->type);
-            exit(1);
+            return error_value("Unknown AST node type");
         }
     }
-    return 0;
 }

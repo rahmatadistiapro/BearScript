@@ -40,7 +40,20 @@ static void lex_identifier(Lexer* lexer, Token* token) {
     // --- KEY CHANGE HERE ---
     if (strcmp(token->value, "growl") == 0) {
         token->type = T_GROWL;
-    } else {
+    }
+    else if (strcmp(token->value, "let") == 0) {
+        token->type = T_LET;
+    }
+    else if (strcmp(token->value, "str") == 0) {
+        token->type = T_STRING;
+    }
+    else if (strcmp(token->value, "int") == 0) {
+        token->type = T_INTEGER;
+    }
+    else if (strcmp(token->value, "float") == 0) {
+        token->type = T_FLOAT;
+    }
+    else {
         token->type = T_IDENTIFIER;
     }
 }
@@ -60,16 +73,16 @@ static void lex_string(Lexer* lexer, Token* token) {
     }
 
     int length = lexer->position - start_pos;
+    token->value = (char*)malloc(length + 1);
     if (!token->value) {
         printf("Error: Memory allocation failed for string token\n");
         exit(EXIT_FAILURE);
     }
-
-    token->value = (char*)malloc(length + 1);
     memcpy(token->value, lexer->source + start_pos, length);
-
     token->value[length] = '\0';
+
     token->type = T_STRING;
+    printf("DEBUG lex_string: String token value=%s\n", token->value);
     advance(lexer); // Skip closing quote
 }
 
@@ -139,8 +152,9 @@ void make_token(Lexer* lexer, Token* token) {
         case '/': token->type = T_DIVIDE; break;
         case '%': token->type = T_MODULO; break;
         case '(': token->type = T_LPAREN; break;
-        case ')': token->type = T_RPAREN; token->value = _strdup(")"); break;
+        case ')': token->type = T_RPAREN; break;
         case '=': token->type = T_ASSIGN; break;
+        case ':': token->type = T_COLON; break;
         default: token->type = T_UNKNOWN; break;
     }
 };

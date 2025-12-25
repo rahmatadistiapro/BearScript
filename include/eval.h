@@ -3,7 +3,8 @@
 
 #include "AST.h"
 #include "symbol_table.h"
+#include "Value.h"
 
-double eval(ASTNode* node, SymbolTable* table);
+Value eval(ASTNode* node, SymbolTable* table);
 
 #endif

@@ -6,7 +6,7 @@
 #include "string.h"
 
 typedef enum {
-    T_GROWL, // growl value; -> ; optional
+    T_GROWL, // growl value
     T_INTEGER, // 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
     T_FLOAT, // 1.0, 2.5, 3.14
     T_STRING, // "hello", 'world'

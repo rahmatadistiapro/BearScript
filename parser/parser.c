@@ -237,6 +237,49 @@ ASTNode* parse_assignment(Parser* parser) {
     return node;
 }
 
+ASTNode* parse_typed_assignment(Parser* parser, char* var_name) {
+    printf("=== parse_typed_assignment (FIXED) ===\n");
+    printf("Parsing typed assignment for '%s'\n", var_name);
+
+    // We're at: var_name ":" type "=" value
+    // Current token is the identifier (var_name)
+
+    // 1.eat colon ':'
+    parser_advance(parser); // skip identifier
+    if  (parser->current_token->type != T_COLON) {
+        printf("Error: Expected ':' after variable name\n");
+        exit(EXIT_FAILURE);
+    }
+    parser_advance(parser); // eat skip colon
+
+    if (parser->current_token->type != T_STRING ||
+        strcmp(parser->current_token->value, "str") != 0) {
+        printf("Error: Expected 'str' type\n");
+        printf("Found token type=%d, value='%s'\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        exit(EXIT_FAILURE);
+    }
+    char* type_name = _strdup("str");
+    parser_advance(parser); // eat 'str'
+
+    if (parser->current_token->type != T_ASSIGN) {
+        printf("Error: Expected '=' after type declaration\n");
+        exit(EXIT_FAILURE);
+    }
+    parser_advance(parser); // eat '='
+
+    ASTNode* value = parse_expression(parser);
+
+    ASTNode* node = malloc(sizeof(ASTNode));
+    node->type = AST_TYPED_ASSIGN;
+    node->data.typed_assign.var_name = var_name;
+    node->data.typed_assign.type_name = type_name;
+    node->data.typed_assign.value = value;
+
+    return node;
+}
+
 TokenType parser_peek(Parser* parser) {
     // save lexer state
     int pos = parser->lexer->position;
@@ -268,14 +311,21 @@ ASTNode* parse_line(Parser* parser) {
     
     // Check if it's an assignment: identifier followed by '='
     if (parser->current_token->type == T_IDENTIFIER) {
+        char* var_name = _strdup(parser->current_token->value);
         // Use parser_peek to check next token without consuming current
         TokenType next = parser_peek(parser);
         printf("Next token type: %d\n", next);
         
-        if (next == T_ASSIGN) {
-            printf("It's an assignment!\n");
+        if (next == T_COLON) {
+            printf("It's a typed assignment!\n");
             return parse_assignment(parser);
         }
+        else if (next == T_ASSIGN) {
+            printf("It's a dynamic assignment!\n");
+            free(var_name);
+            return parse_assignment(parser);
+        }
+        free(var_name);
     }
     else if (parser->current_token->type == T_GROWL) {
         printf("It's a growl statement!\n");

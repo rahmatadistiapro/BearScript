@@ -4,13 +4,14 @@
 #include "Token.h"
 
 typedef enum {
-    AST_ASSIGN,
-    AST_INTEGER,
-    AST_FLOAT,
-    AST_STRING,
-    AST_GROWL_STATEMENT,
-    AST_VARIABLE,
-    AST_BINARY_OP
+    AST_ASSIGN, // 0
+    AST_TYPED_ASSIGN, // 1
+    AST_INTEGER, // 2
+    AST_FLOAT, // 3
+    AST_STRING, // 4
+    AST_GROWL_STATEMENT, // 5
+    AST_VARIABLE, // 6
+    AST_BINARY_OP // 7
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -26,6 +27,11 @@ typedef struct ASTNode {
             char* var_name;
             struct ASTNode* value;
         } assign;
+        struct {
+            char* var_name;
+            char* type_name;
+            struct ASTNode* value;
+        } typed_assign;
         struct {           // for values
             union {
                 long int_val;    // Separate int and float!
