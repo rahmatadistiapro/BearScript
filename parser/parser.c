@@ -16,13 +16,21 @@ void parser_init(Parser* parser, Lexer* lexer, SymbolTable* table) {
 }
 
 void parser_advance(Parser *parser) {
+    printf("DEBUG parser_advance START: Current token type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
     if (parser->current_token->value != NULL) {
         free(parser->current_token->value);
+        parser->current_token->value = NULL;
     }
     make_token(parser->lexer, parser->current_token);
+    printf("DEBUG parser_advance END: New token type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
 }
 
 ASTNode* parse_factor(Parser* parser) {
+    printf("=== parse_factor (FIXED) ===\n");
     Token* token = parser->current_token;
     if (token->type == T_INTEGER) {
         ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
@@ -134,9 +142,13 @@ ASTNode* parse_expression(Parser* parser) {
     
     // Parse first term
     ASTNode* result = parse_term(parser);
+    printf("After parse_term, current token: type=%d, token_value=%s\n", 
+           parser->current_token->type, 
+           parser->current_token->value ? parser->current_token->value : "NULL");
     
     // Keep combining with + or - operators
     while (1) {
+        printf("Loop check: current token type=%d, token_value=%s\n", parser->current_token->type, parser->current_token->value);
         // Check what operator we have (if any)
         if (parser->current_token->type == T_ADD) {
             printf("Found + operator\n");
@@ -150,9 +162,13 @@ ASTNode* parse_expression(Parser* parser) {
             // Create new binary node: (left + right)
             ASTNode* new_node = malloc(sizeof(ASTNode));
             new_node->type = AST_BINARY_OP;
+            printf("Debug: created %d\n", new_node->type);
             new_node->data.binary_op.left = result;
+            printf("Debug: created %d\n", new_node->data.binary_op.left->type);
             new_node->data.binary_op.op = T_ADD;
+            printf("Debug: created op %d\n", new_node->data.binary_op.op);
             new_node->data.binary_op.right = right;
+            printf("Debug: created right %d\n", new_node->data.binary_op.right->type);
             
             // This becomes our new result
             result = new_node;
@@ -171,9 +187,13 @@ ASTNode* parse_expression(Parser* parser) {
             // Create new binary node: (left - right)
             ASTNode* new_node = malloc(sizeof(ASTNode));
             new_node->type = AST_BINARY_OP;
+            printf("Debug: created %d\n", new_node->type);
             new_node->data.binary_op.left = result;
+            printf("Debug: created %d\n", new_node->data.binary_op.left->type);
             new_node->data.binary_op.op = T_SUBTRACT;
+            printf("Debug: created op %d\n", new_node->data.binary_op.op);
             new_node->data.binary_op.right = right;
+            printf("Debug: created right %d\n", new_node->data.binary_op.right->type);
             
             // This becomes our new result
             result = new_node;

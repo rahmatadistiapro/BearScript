@@ -99,6 +99,8 @@ void skip_whitespace(Lexer* lexer) {
 };
 
 void make_token(Lexer* lexer, Token* token) {
+    printf("DEBUG make_token: Starting at char '%c' (ASCII %d)\n", 
+           lexer->current_char, lexer->current_char);
     skip_whitespace(lexer);
 
     if (lexer->current_char == '\0') {
@@ -123,8 +125,6 @@ void make_token(Lexer* lexer, Token* token) {
         return;
     }
 
-    if (1) {return;}
-
     char c = lexer->current_char;
     advance(lexer);
 
@@ -139,7 +139,7 @@ void make_token(Lexer* lexer, Token* token) {
         case '/': token->type = T_DIVIDE; break;
         case '%': token->type = T_MODULO; break;
         case '(': token->type = T_LPAREN; break;
-        case ')': token->type = T_RPAREN; break;
+        case ')': token->type = T_RPAREN; token->value = _strdup(")"); break;
         case '=': token->type = T_ASSIGN; break;
         default: token->type = T_UNKNOWN; break;
     }
