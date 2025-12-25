@@ -5,10 +5,11 @@
 #include "stdlib.h"
 #include "string.h"
 #include "stdbool.h"
+#include "D:/BearScript/include/Value.h"
 
 typedef struct {
     char* name;
-    double value;
+    Value value;  // Changed from double to Value
 } Symbol;
 
 typedef struct {
@@ -19,7 +20,9 @@ typedef struct {
 
 void init_table(SymbolTable* table);
 void free_table(SymbolTable* table);
-void set_variable(SymbolTable* table, const char* name, double value);
-bool get_variable(SymbolTable* table, const char* name, double* out_value);
+
+// UPDATED SIGNATURES:
+void set_variable(SymbolTable* table, const char* name, Value value);  // Value, not double
+bool get_variable(SymbolTable* table, const char* name, Value* out_value);  // Value*, not double*
 
 #endif // SYMBOL_TABLE_H

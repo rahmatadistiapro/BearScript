@@ -1,1 +1,2 @@
-growl 5
+name = "John"
+growl name
