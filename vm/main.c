@@ -56,8 +56,9 @@ int main(int argc, char *argv[]) {
             free_table(&table);
             return 1;
         }
-    
+
         FILE* file = fopen(argv[1], "r");
+        printf("DEBUG: file: %p\n", file);
         if (file == NULL) {
             printf("Error: Cannot open file '%s'\n", argv[1]);
             free_table(&table);
