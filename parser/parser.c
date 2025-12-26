@@ -341,6 +341,39 @@ ASTNode* parse_typed_assignment(Parser* parser, char* var_name) {
     }
 }
 
+ASTNode* parse_immutable_assignment(Parser* parser, char* var_name) {
+    // Implementation for immutable assignment parsing
+    // This is a placeholder; actual implementation would be similar to parse_typed_assignment
+    printf("=== parse_immutable_assignment (FIXED) ===\n");
+    printf("Parsing immutable assignment for '%s'\n", var_name);
+    printf("Before eating identifier, current token: type=%d, value=%s\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
+    parser_advance(parser); // eat IDENT
+    printf("After eating identifier and before eating '=', current token: type=%d, value=%s\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
+
+    if (parser->current_token->type != T_ASSIGN) {
+        printf("Error: Expected '=' after identifier in immutable assignment\n");
+        printf("Found token type=%d, value='%s'\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        exit(EXIT_FAILURE);
+    }
+    parser_advance(parser); // eat '='
+
+    ASTNode* value = parse_expression(parser);
+
+    ASTNode* node = malloc(sizeof(ASTNode));
+    node->type = AST_IMMUTABLE_ASSIGN;
+    node->data.immutable_assign.is_immutable = malloc(sizeof(bool));
+    *(node->data.immutable_assign.is_immutable) = true;
+    node->data.immutable_assign.var_name = var_name;
+    node->data.immutable_assign.value = value;
+    return node;
+}
+
 TokenType parser_peek(Parser* parser) {
     // save lexer state
     int pos = parser->lexer->position;
@@ -387,6 +420,25 @@ ASTNode* parse_line(Parser* parser) {
             return parse_assignment(parser);
         }
         free(var_name);
+    }
+    else if (parser->current_token->type == T_LET) {
+        printf("It's an immutable assignment!\n");
+        printf("Before eating 'let', current token: type=%d, value=%s\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        parser_advance(parser); // eat 'let'
+        printf("After eating 'let', current token: type=%d, value=%s\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        if (parser->current_token->type != T_IDENTIFIER) {
+            printf("Error: Expected identifier after 'let'\n");
+            printf("Found token type=%d, value='%s'\n",
+                   parser->current_token->type,
+                   parser->current_token->value ? parser->current_token->value : "(null)");
+            exit(EXIT_FAILURE);
+        }
+        char* var_name = _strdup(parser->current_token->value);
+        return parse_immutable_assignment(parser, var_name);
     }
     else if (parser->current_token->type == T_GROWL) {
         printf("It's a growl statement!\n");

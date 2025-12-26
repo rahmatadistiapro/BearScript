@@ -22,6 +22,7 @@ ASTNode* parse_term(Parser* parser);
 ASTNode* parse_expression(Parser* parser);
 ASTNode* parse_assignment(Parser* parser);
 ASTNode* parse_typed_assignment(Parser* parser, char* var_name);
+ASTNode* parse_immutable_assignment(Parser* parser, char* var_name);
 ASTNode* parse_growl_statement(Parser* parser);
 ASTNode* parse_line(Parser* parser); // entry point for a single line
 

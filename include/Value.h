@@ -31,6 +31,7 @@ bool is_number(Value value);
 bool is_string(Value value);
 bool is_boolean(Value value);
 bool is_nil(Value value);
+bool is_immutable(Value value);
 bool is_error(Value value);
 
 double as_number(Value value);

@@ -42,6 +42,7 @@ bool is_number(Value value) { return value.type == VALUE_NUMBER; }
 bool is_string(Value value) { return value.type == VALUE_STRING; }
 bool is_boolean(Value value) { return value.type == VALUE_BOOLEAN; }
 bool is_nil(Value value) { return value.type == VALUE_NIL; }
+bool is_immutable(Value value) { return value.type == VALUE_BOOLEAN; } // Placeholder
 bool is_error(Value value) { return value.type == VALUE_ERROR; }
 
 double as_number(Value value) {

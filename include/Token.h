@@ -18,7 +18,15 @@ typedef enum {
     T_LPAREN, // (
     T_RPAREN, // )
     T_ASSIGN, // =
+    T_IF, // if
+    T_ELIF, // elif
+    T_ELSE, // else
     T_EQUAL, // ==
+    T_NOTEQUAL, // !=
+    T_LESSTHAN, // <
+    T_LESSTHANOREQUAL, // <=
+    T_GREATERTHAN, // >
+    T_GREATERTHANOREQUAL, // >=
     T_IDENTIFIER, // variable names
     T_LET, // let keyword for static variable declaration
     T_COLON, // :

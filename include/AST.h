@@ -2,16 +2,17 @@
 #define AST_H
 
 #include "Token.h"
-
+#include <stdbool.h>
 typedef enum {
     AST_ASSIGN, // 0
     AST_TYPED_ASSIGN, // 1
-    AST_INTEGER, // 2
-    AST_FLOAT, // 3
-    AST_STRING, // 4
-    AST_GROWL_STATEMENT, // 5
-    AST_VARIABLE, // 6
-    AST_BINARY_OP // 7
+    AST_IMMUTABLE_ASSIGN, // 2
+    AST_INTEGER, // 3
+    AST_FLOAT, // 4
+    AST_STRING, // 5
+    AST_GROWL_STATEMENT, // 6
+    AST_VARIABLE, // 7
+    AST_BINARY_OP // 8
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -32,6 +33,12 @@ typedef struct ASTNode {
             char* type_name;
             struct ASTNode* value;
         } typed_assign;
+
+        struct {
+            bool* is_immutable;
+            char* var_name;
+            struct ASTNode* value;
+        } immutable_assign;
         struct {           // for values
             union {
                 long int_val;    // Separate int and float!

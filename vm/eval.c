@@ -50,6 +50,13 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 return error_value("Unknown type");
             }
         }
+        case AST_IMMUTABLE_ASSIGN: {
+            bool immutable = *(node->data.immutable_assign.is_immutable);
+            char* var_name = node->data.immutable_assign.var_name;
+            Value value = eval(node->data.immutable_assign.value, table);
+            set_variable(table, var_name, value);
+            return value;
+        }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
             return value;
