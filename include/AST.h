@@ -36,6 +36,7 @@ typedef struct ASTNode {
 
         struct {
             char* var_name;
+            char* type_name;
             struct ASTNode* value;
         } immutable_assign;
         struct {           // for values

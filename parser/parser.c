@@ -354,6 +354,11 @@ ASTNode* parse_immutable_assignment(Parser* parser, char* var_name) {
            parser->current_token->type,
            parser->current_token->value ? parser->current_token->value : "(null)");
 
+    if (parser->current_token->type == T_COLON) {
+        printf("it's a typed immutable assignment!\n");
+        return parse_immutable_typed_dec(parser, var_name);
+    }
+
     if (parser->current_token->type != T_ASSIGN) {
         printf("Error: Expected '=' after identifier in immutable assignment\n");
         printf("Found token type=%d, value='%s'\n",
@@ -370,6 +375,82 @@ ASTNode* parse_immutable_assignment(Parser* parser, char* var_name) {
     node->data.immutable_assign.var_name = var_name;
     node->data.immutable_assign.value = value;
     return node;
+}
+
+ASTNode* parse_immutable_typed_dec(Parser* parser, char* var_name) {
+    printf("=== parse_immutable_type_assignment (FIXED) ===\n");
+    printf("Parsing immutable typed assignment for '%s'\n", var_name);
+    parser_advance(parser); // eat ':'
+
+    bool done = false;
+    if (parser->current_token->type == T_INTEGER) {
+        printf("Confirmed type token: '%s'\n", parser->current_token->value);
+        char* type_name = _strdup("int");
+        parser_advance(parser); // eat 'int'
+
+        if (parser->current_token->type != T_ASSIGN) {
+            printf("Error: Expected '=' after type declaration\n");
+            exit(EXIT_FAILURE);
+        }
+        parser_advance(parser); // eat '='
+
+        ASTNode* value = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_IMMUTABLE_ASSIGN;
+        node->data.immutable_assign.var_name = var_name;
+        node->data.immutable_assign.type_name = type_name;
+        node->data.immutable_assign.value = value;
+
+        done = true;
+        return node;
+    }
+    else if (parser->current_token->type == T_FLOAT && !done) {
+        printf("Confirmed type token: '%s'\n", parser->current_token->value);
+        char* type_name = _strdup("float");
+        parser_advance(parser); // eat 'float'
+
+        if (parser->current_token->type != T_ASSIGN) {
+            printf("Error: Expected '=' after type declaration\n");
+            exit(EXIT_FAILURE);
+        }
+        parser_advance(parser); // eat '='
+
+        ASTNode* value = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_IMMUTABLE_ASSIGN;
+        node->data.immutable_assign.var_name = var_name;
+        node->data.immutable_assign.type_name = type_name;
+        node->data.immutable_assign.value = value;
+        
+        return node;
+    }
+    else if (parser->current_token->type == T_STRING && !done) {
+        printf("Confirmed type token: '%s'\n", parser->current_token->value);
+        char* type_name = _strdup("str");
+        parser_advance(parser); // eat 'str'
+
+        if (parser->current_token->type != T_ASSIGN) {
+            printf("Error: Expected '=' after type declaration\n");
+            exit(EXIT_FAILURE);
+        }
+        parser_advance(parser); // eat '='
+
+        ASTNode* value = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_IMMUTABLE_ASSIGN;
+        node->data.immutable_assign.var_name = var_name;
+        node->data.immutable_assign.type_name = type_name;
+        node->data.immutable_assign.value = value;
+        
+        return node;
+    }
+    else {
+         printf("Error: Unknown type in immutable typed assignment\n");
+         exit(EXIT_FAILURE);
+     }
 }
 
 TokenType parser_peek(Parser* parser) {

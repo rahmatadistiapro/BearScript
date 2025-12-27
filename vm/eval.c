@@ -61,11 +61,35 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_IMMUTABLE_ASSIGN: {
             char* var_name = node->data.immutable_assign.var_name;
+            char* type_name = node->data.immutable_assign.type_name;
             Value value = eval(node->data.immutable_assign.value, table);
             if (!define_variable(table, var_name, value, true)) {
-                return error_value("cannot defined a variable that is already a defined variable");
+                return error_value("cannot defined a variable that is already defined variable");
             }
-            return value;
+            if (type_name == NULL) {
+                return value;
+            }
+            if (strcmp(type_name, "str") == 0) {
+                if (!is_string(value)) {
+                    return error_value("String variable requires to have a string value");
+                }
+                return value;
+            } 
+            else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
+                if (!is_number(value)) {
+                    return error_value("Number variable requires to have a number value");
+                }
+                return value;
+            }
+            else if (strcmp(type_name, "float") == 0) {
+                if (!is_number(value)) {
+                    return error_value("Float variable requires to have a float value");
+                }
+                return value;
+            }
+            else {
+                return error_value("Unknown type, did you mean: 'str', 'int', or 'float'?");
+            }
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
