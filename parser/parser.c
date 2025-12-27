@@ -367,8 +367,6 @@ ASTNode* parse_immutable_assignment(Parser* parser, char* var_name) {
 
     ASTNode* node = malloc(sizeof(ASTNode));
     node->type = AST_IMMUTABLE_ASSIGN;
-    node->data.immutable_assign.is_immutable = malloc(sizeof(bool));
-    *(node->data.immutable_assign.is_immutable) = true;
     node->data.immutable_assign.var_name = var_name;
     node->data.immutable_assign.value = value;
     return node;

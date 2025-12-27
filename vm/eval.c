@@ -17,14 +17,16 @@ Value eval(ASTNode* node, SymbolTable* table) {
         case AST_VARIABLE: {
             Value value;
             if (!get_variable(table, node->data.variable.var_name, &value)) {
-                return error_value("Undefined variable");
+                return error_value("Undefined variable, cannot find variable");
             }
             return value;
         }
         case AST_ASSIGN: {
             char* var_name = node->data.assign.var_name;
             Value value = eval(node->data.assign.value, table);
-            set_variable(table, var_name, value);
+            if (!assign_variable(table, var_name, value)) {
+                return error_value("Cannot reassign to immutable variable");
+            }
             return value;
         }
         case AST_TYPED_ASSIGN: {
@@ -34,27 +36,35 @@ Value eval(ASTNode* node, SymbolTable* table) {
             
             if (strcmp(type_name, "str") == 0) {
                 if (!is_string(value)) {
-                    return error_value("String variable requires string value");
+                    return error_value("String variable requires to have a string value");
                 }
-                set_variable(table, var_name, value);
+                assign_variable(table, var_name, value);
                 return value;
             } 
             else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
                 if (!is_number(value)) {
-                    return error_value("Number variable requires number value");
+                    return error_value("Number variable requires to have a number value");
                 }
-                set_variable(table, var_name, value);
+                assign_variable(table, var_name, value);
+                return value;
+            }
+            else if (strcmp(type_name, "float") == 0) {
+                if (!is_number(value)) {
+                    return error_value("Float variable requires to have a float value");
+                }
+                assign_variable(table, var_name, value);
                 return value;
             }
             else {
-                return error_value("Unknown type");
+                return error_value("Unknown type, did you mean: 'str', 'int', or 'float'?");
             }
         }
         case AST_IMMUTABLE_ASSIGN: {
-            bool immutable = *(node->data.immutable_assign.is_immutable);
             char* var_name = node->data.immutable_assign.var_name;
             Value value = eval(node->data.immutable_assign.value, table);
-            set_variable(table, var_name, value);
+            if (!define_variable(table, var_name, value, true)) {
+                return error_value("cannot defined a variable that is already a defined variable");
+            }
             return value;
         }
         case AST_GROWL_STATEMENT: {
@@ -71,16 +81,18 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 double r = as_number(right);
                 
                 switch (node->data.binary_op.op) {
-                    case T_ADD:      return number_value(l + r);
-                    case T_SUBTRACT: return number_value(l - r);
-                    case T_MAUL:     return number_value(l * r);
-                    case T_DIVIDE:   
-                        if (r == 0) return error_value("Division by zero");
+                    case T_ADD:   { return number_value(l + r); }
+                    case T_SUBTRACT: { return number_value(l - r); }
+                    case T_MAUL:     { return number_value(l * r); }
+                    case T_DIVIDE: {
+                        if (r == 0) { return error_value("cannot do Division by zero");}
                         return number_value(l / r);
-                    case T_MODULO:   
-                        if ((int)r == 0) return error_value("Modulo by zero");
+                    }
+                    case T_MODULO: {
+                        if ((int)r == 0) { return error_value("cannot do Modulo by zero"); }
                         return number_value((int)l % (int)r);
-                    default:         return error_value("Unknown operator");
+                    }
+                    default:         return error_value("Unknown operator, did you mean: '+', '-', '*', '/', '%'?");
                 }
             }
             // Handle string concatenation (future)
@@ -93,7 +105,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
             }
         }
         default: {
-            return error_value("Unknown AST node type");
+            return error_value("Unknown keyword");
         }
     }
 }

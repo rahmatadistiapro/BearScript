@@ -10,6 +10,7 @@
 typedef struct {
     char* name;
     Value value;  // Changed from double to Value
+    bool is_immutable;
 } Symbol;
 
 typedef struct {
@@ -21,8 +22,19 @@ typedef struct {
 void init_table(SymbolTable* table);
 void free_table(SymbolTable* table);
 
+// Lookup:
+Symbol* symbol_lookup(SymbolTable* table, const char* name);
+
 // UPDATED SIGNATURES:
-void set_variable(SymbolTable* table, const char* name, Value value);  // Value, not double
+bool define_variable(SymbolTable* table,
+                     const char* name,
+                     Value value,
+                     bool is_immutable
+);  // Value, not double
+bool assign_variable(SymbolTable* table,
+                     const char* name,
+                     Value value
+);  // Value, not double
 bool get_variable(SymbolTable* table, const char* name, Value* out_value);  // Value*, not double*
 
 #endif // SYMBOL_TABLE_H
