@@ -2,5 +2,5 @@ name = "John"
 growl name
 1+1
 age: int = 30
-salary: float = 1999.999
+salary: int = 1999
 growl salary + age

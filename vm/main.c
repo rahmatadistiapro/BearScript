@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
             Value result = interpret(input, &table);
             print_value(result);
             printf("\n");
+            free_value(result);
         }
     } 
     else if (argc == 2) {
@@ -102,6 +103,7 @@ int main(int argc, char *argv[]) {
             Value result = interpret(line, &table);
             print_value(result);
             printf("\n");
+            free_value(result);
         }
         
         fclose(file);

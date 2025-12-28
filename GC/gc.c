@@ -7,6 +7,7 @@ void gc_free_ast(ASTNode* node) {
     if (node == NULL) {
         return;
     }
+    printf("GC: Freeing AST node of type %d\n", node->type);
 
     // First, recursively free all child nodes and their data
     switch (node->type) {

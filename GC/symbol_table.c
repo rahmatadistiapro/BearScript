@@ -22,32 +22,6 @@ void free_table(SymbolTable* table) {
     table->symbols = NULL;
 }
 
-// Added to Value.c
-Value copy_value(Value original) {
-    Value copy;
-    copy.type = original.type;
-    
-    switch (original.type) {
-        case VALUE_NUMBER:
-            copy.as.number = original.as.number;
-            break;
-        case VALUE_STRING:
-        case VALUE_ERROR:
-            // Deep copy: duplicate the string
-            copy.as.string = (original.as.string == NULL) 
-                ? NULL 
-                : _strdup(original.as.string);
-            break;
-        case VALUE_BOOLEAN:
-            copy.as.boolean = original.as.boolean;
-            break;
-        case VALUE_NIL:
-            // Nothing to copy
-            break;
-    }
-    return copy;
-}
-
 Symbol* symbol_lookup(SymbolTable* table, const char* name) {
     for (int i = 0; i < table->size; i++) {
         if (strcmp(table->symbols[i].name, name) == 0) {

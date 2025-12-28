@@ -6,10 +6,10 @@
 Value eval(ASTNode* node, SymbolTable* table) {
     switch (node->type) {
         case AST_INTEGER: {
-            return number_value((double)node->data.value.int_val);
+            return integer_value(node->data.value.int_val);
         }
         case AST_FLOAT: {
-            return number_value(node->data.value.float_val);
+            return float_value(node->data.value.float_val);
         }
         case AST_STRING: {
             return string_value(_strdup(node->data.string.str_val));
@@ -42,14 +42,14 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 return value;
             } 
             else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
-                if (!is_number(value)) {
+                if (!is_integer(value)) {
                     return error_value(_strdup("Number variable requires to have a number value"));
                 }
                 assign_variable(table, var_name, value);
                 return value;
             }
             else if (strcmp(type_name, "float") == 0) {
-                if (!is_number(value)) {
+                if (!is_float(value)) {
                     return error_value(_strdup("Float variable requires to have a float value"));
                 }
                 assign_variable(table, var_name, value);
@@ -76,13 +76,13 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 return value;
             } 
             else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
-                if (!is_number(value)) {
+                if (!is_integer(value)) {
                     return error_value(_strdup("Number variable requires to have a number value"));
                 }
                 return value;
             }
             else if (strcmp(type_name, "float") == 0) {
-                if (!is_number(value)) {
+                if (!is_float(value)) {
                     return error_value(_strdup("Float variable requires to have a float value"));
                 }
                 return value;
@@ -100,21 +100,40 @@ Value eval(ASTNode* node, SymbolTable* table) {
             Value right = eval(node->data.binary_op.right, table);
             
             // Handle number operations
-            if (is_number(left) && is_number(right)) {
-                double l = as_number(left);
-                double r = as_number(right);
+            if (is_integer(left) && is_integer(right)) {
+                long l = as_integer(left);
+                long r = as_integer(right);
                 
                 switch (node->data.binary_op.op) {
-                    case T_ADD:   { return number_value(l + r); }
-                    case T_SUBTRACT: { return number_value(l - r); }
-                    case T_MAUL:     { return number_value(l * r); }
+                    case T_ADD:   { return integer_value(l + r); }
+                    case T_SUBTRACT: { return integer_value(l - r); }
+                    case T_MAUL:     { return integer_value(l * r); }
                     case T_DIVIDE: {
                         if (r == 0) { return error_value(_strdup("cannot do Division by zero")); }
-                        return number_value(l / r);
+                        return integer_value(l / r);
+                    }
+                    case T_MODULO: {
+                        if (r == 0) { return error_value(_strdup("cannot do Modulo by zero")); }
+                        return integer_value(l % r);
+                    }
+                    default:         return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
+                }
+            }
+            if (is_number(left) && is_number(right)) {
+                double l = as_float(left);
+                double r = as_float(right);
+                
+                switch (node->data.binary_op.op) {
+                    case T_ADD:   { return float_value(l + r); }
+                    case T_SUBTRACT: { return float_value(l - r); }
+                    case T_MAUL:     { return float_value(l * r); }
+                    case T_DIVIDE: {
+                        if (r == 0) { return error_value(_strdup("cannot do Division by zero")); }
+                        return float_value(l / r);
                     }
                     case T_MODULO: {
                         if ((int)r == 0) { return error_value(_strdup("cannot do Modulo by zero")); }
-                        return number_value((int)l % (int)r);
+                        return integer_value((int)l % (int)r);
                     }
                     default:         return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
                 }
