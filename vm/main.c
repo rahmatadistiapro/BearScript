@@ -2,11 +2,12 @@
 #include "D:/BearScript/include/parser.h"
 #include "D:/BearScript/include/eval.h"
 #include "D:/BearScript/include/symbol_table.h"
+#include "D:/BearScript/include/gc.h"
 #include <stdio.h>
 #include <string.h>
 
 // Helper function to process one line of BearScript code
-Value process_line(const char* line, SymbolTable* table) {
+Value interpret(const char* line, SymbolTable* table) {
     Lexer lexer;
     lexer_init(&lexer, line);
     
@@ -16,7 +17,11 @@ Value process_line(const char* line, SymbolTable* table) {
     ASTNode* tree = parse_line(&parser);
     Value result = eval(tree, table);
 
-    return result;
+    Value result_copy = copy_value(result);
+    gc_free_ast(tree);
+
+    free_value(result);
+    return result_copy;
 }
 
 int main(int argc, char *argv[]) {
@@ -40,7 +45,7 @@ int main(int argc, char *argv[]) {
                 break;
             }
             
-            Value result = process_line(input, &table);
+            Value result = interpret(input, &table);
             print_value(result);
             printf("\n");
         }
@@ -94,7 +99,7 @@ int main(int argc, char *argv[]) {
             
             // Process the line
             printf("[Line %d] ", line_number);
-            Value result = process_line(line, &table);
+            Value result = interpret(line, &table);
             print_value(result);
             printf("\n");
         }

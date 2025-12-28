@@ -22,6 +22,9 @@ typedef struct {
 void init_table(SymbolTable* table);
 void free_table(SymbolTable* table);
 
+// copy value:
+Value copy_value(Value original);
+
 // Lookup:
 Symbol* symbol_lookup(SymbolTable* table, const char* name);
 

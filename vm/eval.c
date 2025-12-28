@@ -12,12 +12,12 @@ Value eval(ASTNode* node, SymbolTable* table) {
             return number_value(node->data.value.float_val);
         }
         case AST_STRING: {
-            return string_value(node->data.string.str_val);
+            return string_value(_strdup(node->data.string.str_val));
         }
         case AST_VARIABLE: {
             Value value;
             if (!get_variable(table, node->data.variable.var_name, &value)) {
-                return error_value("Undefined variable, cannot find variable");
+                return error_value(_strdup("Undefined variable, cannot find variable"));
             }
             return value;
         }
@@ -25,7 +25,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
             char* var_name = node->data.assign.var_name;
             Value value = eval(node->data.assign.value, table);
             if (!assign_variable(table, var_name, value)) {
-                return error_value("Cannot reassign to immutable variable");
+                return error_value(_strdup("Cannot reassign to immutable variable"));
             }
             return value;
         }
@@ -36,27 +36,27 @@ Value eval(ASTNode* node, SymbolTable* table) {
             
             if (strcmp(type_name, "str") == 0) {
                 if (!is_string(value)) {
-                    return error_value("String variable requires to have a string value");
+                    return error_value(_strdup("String variable requires to have a string value"));
                 }
                 assign_variable(table, var_name, value);
                 return value;
             } 
             else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
                 if (!is_number(value)) {
-                    return error_value("Number variable requires to have a number value");
+                    return error_value(_strdup("Number variable requires to have a number value"));
                 }
                 assign_variable(table, var_name, value);
                 return value;
             }
             else if (strcmp(type_name, "float") == 0) {
                 if (!is_number(value)) {
-                    return error_value("Float variable requires to have a float value");
+                    return error_value(_strdup("Float variable requires to have a float value"));
                 }
                 assign_variable(table, var_name, value);
                 return value;
             }
             else {
-                return error_value("Unknown type, did you mean: 'str', 'int', or 'float'?");
+                return error_value(_strdup("Unknown type, did you mean: 'str', 'int', or 'float'?"));
             }
         }
         case AST_IMMUTABLE_ASSIGN: {
@@ -64,31 +64,31 @@ Value eval(ASTNode* node, SymbolTable* table) {
             char* type_name = node->data.immutable_assign.type_name;
             Value value = eval(node->data.immutable_assign.value, table);
             if (!define_variable(table, var_name, value, true)) {
-                return error_value("cannot defined a variable that is already defined variable");
+                return error_value(_strdup("cannot defined a variable that is already defined variable"));
             }
             if (type_name == NULL) {
                 return value;
             }
             if (strcmp(type_name, "str") == 0) {
                 if (!is_string(value)) {
-                    return error_value("String variable requires to have a string value");
+                    return error_value(_strdup("String variable requires to have a string value"));
                 }
                 return value;
             } 
             else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
                 if (!is_number(value)) {
-                    return error_value("Number variable requires to have a number value");
+                    return error_value(_strdup("Number variable requires to have a number value"));
                 }
                 return value;
             }
             else if (strcmp(type_name, "float") == 0) {
                 if (!is_number(value)) {
-                    return error_value("Float variable requires to have a float value");
+                    return error_value(_strdup("Float variable requires to have a float value"));
                 }
                 return value;
             }
             else {
-                return error_value("Unknown type, did you mean: 'str', 'int', or 'float'?");
+                return error_value(_strdup("Unknown type, did you mean: 'str', 'int', or 'float'?"));
             }
         }
         case AST_GROWL_STATEMENT: {
@@ -109,27 +109,27 @@ Value eval(ASTNode* node, SymbolTable* table) {
                     case T_SUBTRACT: { return number_value(l - r); }
                     case T_MAUL:     { return number_value(l * r); }
                     case T_DIVIDE: {
-                        if (r == 0) { return error_value("cannot do Division by zero");}
+                        if (r == 0) { return error_value(_strdup("cannot do Division by zero")); }
                         return number_value(l / r);
                     }
                     case T_MODULO: {
-                        if ((int)r == 0) { return error_value("cannot do Modulo by zero"); }
+                        if ((int)r == 0) { return error_value(_strdup("cannot do Modulo by zero")); }
                         return number_value((int)l % (int)r);
                     }
-                    default:         return error_value("Unknown operator, did you mean: '+', '-', '*', '/', '%'?");
+                    default:         return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
                 }
             }
             // Handle string concatenation (future)
             else if (is_string(left) && is_string(right) && node->data.binary_op.op == T_ADD) {
                 // TODO: Implement string concatenation
-                return error_value("String concatenation not implemented yet");
+                return error_value(_strdup("String concatenation not implemented yet"));
             }
             else {
-                return error_value("Type mismatch in operation");
+                return error_value(_strdup("Type mismatch in operation"));
             }
         }
         default: {
-            return error_value("Unknown keyword");
+            return error_value(_strdup("Unknown keyword"));
         }
     }
 }

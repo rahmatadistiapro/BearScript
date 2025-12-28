@@ -1,4 +1,5 @@
 #include "D:/BearScript/include/symbol_table.h"
+#include "D:/BearScript/include/Value.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -12,13 +13,39 @@ void init_table(SymbolTable* table) {
 void free_table(SymbolTable* table) {
     for (int i = 0; i < table->size; i++) {
         free(table->symbols[i].name);
-        // Free the Value if it contains a string
-        if (table->symbols[i].value.type == VALUE_STRING || 
-            table->symbols[i].value.type == VALUE_ERROR) {
-            free(table->symbols[i].value.as.string);
-        }
+        free_value(table->symbols[i].value);  // Used existing function!
     }
     free(table->symbols);
+    // Optional: reset table state
+    table->size = 0;
+    table->capacity = 0;
+    table->symbols = NULL;
+}
+
+// Added to Value.c
+Value copy_value(Value original) {
+    Value copy;
+    copy.type = original.type;
+    
+    switch (original.type) {
+        case VALUE_NUMBER:
+            copy.as.number = original.as.number;
+            break;
+        case VALUE_STRING:
+        case VALUE_ERROR:
+            // Deep copy: duplicate the string
+            copy.as.string = (original.as.string == NULL) 
+                ? NULL 
+                : _strdup(original.as.string);
+            break;
+        case VALUE_BOOLEAN:
+            copy.as.boolean = original.as.boolean;
+            break;
+        case VALUE_NIL:
+            // Nothing to copy
+            break;
+    }
+    return copy;
 }
 
 Symbol* symbol_lookup(SymbolTable* table, const char* name) {
@@ -32,42 +59,36 @@ Symbol* symbol_lookup(SymbolTable* table, const char* name) {
 
 bool define_variable(SymbolTable *table, const char *name, Value value, bool is_immutable) {
     if (symbol_lookup(table, name)) {
-        // Variable already exists
         return false;
     }
+    
     if (table->size >= table->capacity) {
         table->capacity *= 2;
-        table->symbols = realloc(
-            table->symbols,
-            sizeof(Symbol) * table->capacity
-        );
+        table->symbols = realloc(table->symbols, sizeof(Symbol) * table->capacity);
     }
 
     table->symbols[table->size].name = _strdup(name);
-    table->symbols[table->size].value = value;
+    table->symbols[table->size].value = copy_value(value);  // DEEP COPY
     table->symbols[table->size].is_immutable = is_immutable;
     table->size++;
     return true;
 }
 
 bool assign_variable(SymbolTable* table, const char* name, Value value) {
-    // Check if variable already exists
     for (int i = 0; i < table->size; i++) {
         if (strcmp(table->symbols[i].name, name) == 0) {
-
-            // ❌ IMMUTABLE CHECK (main point of this function)
             if (table->symbols[i].is_immutable) {
-                return false; // cannot reassign immutable variable
+                return false;
             }
 
-            // Free old string if needed
+            // Free old value's string if needed
             if (table->symbols[i].value.type == VALUE_STRING ||
                 table->symbols[i].value.type == VALUE_ERROR) {
                 free(table->symbols[i].value.as.string);
             }
 
-            // Assign new value
-            table->symbols[i].value = value;
+            // DEEP COPY the new value
+            table->symbols[i].value = copy_value(value);
             return true;
         }
     }
@@ -75,20 +96,15 @@ bool assign_variable(SymbolTable* table, const char* name, Value value) {
     // Variable not found → define as mutable
     if (table->size >= table->capacity) {
         table->capacity *= 2;
-        table->symbols = realloc(
-            table->symbols,
-            sizeof(Symbol) * table->capacity
-        );
+        table->symbols = realloc(table->symbols, sizeof(Symbol) * table->capacity);
     }
 
     table->symbols[table->size].name = _strdup(name);
-    table->symbols[table->size].value = value;
-    table->symbols[table->size].is_immutable = false; // default mutable
+    table->symbols[table->size].value = copy_value(value);  // DEEP COPY
+    table->symbols[table->size].is_immutable = false;
     table->size++;
-
     return true;
 }
-
 
 // UPDATED THIS: Change signature to match header
 bool get_variable(SymbolTable* table, const char* name, Value* out_value) {  // Value*, not double*!
