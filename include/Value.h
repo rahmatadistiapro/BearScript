@@ -49,6 +49,8 @@ bool as_boolean(Value value);
 void print_value(Value value);
 bool values_equal(Value a, Value b);
 void free_value(Value value);
+
 Value copy_value(Value original);
+static bool is_truthy(Value value);
 
 #endif // VALUE_H

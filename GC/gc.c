@@ -15,6 +15,46 @@ void gc_free_ast(ASTNode* node) {
             gc_free_ast(node->data.growl_stmt.expression);
             break;
 
+        case AST_IF_STATEMENT:
+            gc_free_ast(node->data.if_stmt.condition);
+
+            for (int i = 0; i < node->data.if_stmt.then_count; i++) {
+                gc_free_ast(node->data.if_stmt.then_statements[i]);
+            }
+            free(node->data.if_stmt.then_statements);
+
+            if (node->data.if_stmt.elif_branch) {
+                gc_free_ast(node->data.if_stmt.elif_branch);
+            }
+
+            if (node->data.if_stmt.else_branch) {
+                gc_free_ast(node->data.if_stmt.else_branch);
+            }
+            break;
+
+        case AST_ELIF_STATEMENT:
+            gc_free_ast(node->data.elif_stmt.condition);
+
+            for (int i = 0; i < node->data.elif_stmt.count; i++) {
+                gc_free_ast(node->data.elif_stmt.then_statements[i]);
+            }
+            free(node->data.elif_stmt.then_statements);
+            
+            if (node->data.elif_stmt.next_elif) {
+                gc_free_ast(node->data.elif_stmt.next_elif);
+            }
+
+            if (node->data.elif_stmt.else_branch) {
+                gc_free_ast(node->data.elif_stmt.else_branch);
+            }
+            break;
+
+        case AST_ELSE_STATEMENT:
+            for (int i = 0; i < node->data.else_stmt.count; i++) {
+                gc_free_ast(&node->data.else_stmt.then_statements[i]);
+            }
+            free(node->data.else_stmt.then_statements);
+            break;
         case AST_STRING:
             // Free the heap-allocated string copy
             if (node->data.string.str_val != NULL) {
@@ -63,6 +103,12 @@ void gc_free_ast(ASTNode* node) {
             // Recursively free the left and right child expressions
             gc_free_ast(node->data.binary_op.left);
             gc_free_ast(node->data.binary_op.right);
+            break;
+
+        case AST_COMPARE_OP:
+            // Recursively free the left and right child expressions
+            gc_free_ast(node->data.compare_op.left);
+            gc_free_ast(node->data.compare_op.right);
             break;
 
         case AST_INTEGER:

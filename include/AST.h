@@ -10,9 +10,14 @@ typedef enum {
     AST_INTEGER, // 3
     AST_FLOAT, // 4
     AST_STRING, // 5
-    AST_GROWL_STATEMENT, // 6
-    AST_VARIABLE, // 7
-    AST_BINARY_OP // 8
+    AST_BOOLEAN, // 6
+    AST_GROWL_STATEMENT, // 7
+    AST_VARIABLE, // 8
+    AST_BINARY_OP, // 9
+    AST_IF_STATEMENT, // 10
+    AST_ELIF_STATEMENT, // 11
+    AST_ELSE_STATEMENT, // 12
+    AST_COMPARE_OP // 13
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -21,6 +26,37 @@ typedef struct ASTNode {
         struct {           // for growl command
             struct ASTNode* expression;
         } growl_stmt;
+
+        struct {
+            struct ASTNode* condition;
+            struct ASTNode** then_statements;
+            int then_count;
+            struct ASTNode* elif_branch; // array of elif branches
+            struct ASTNode* else_branch; // else branch
+        } if_stmt;
+
+        struct {
+            struct ASTNode* condition;
+            struct ASTNode** then_statements;
+            int count;
+            struct ASTNode* next_elif; // next elif branch
+            struct ASTNode* else_branch; // else branch
+        } elif_stmt;
+
+        struct {
+            struct ASTNode* then_statements;
+            int count;
+        } else_stmt;
+
+        struct {
+            struct ASTNode* left;
+            TokenType op;
+            struct ASTNode* right;
+        } compare_op;
+
+        struct {
+            bool value;
+        } boolean;
         struct {
             char* str_val;
         } string;

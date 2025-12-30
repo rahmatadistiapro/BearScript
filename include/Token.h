@@ -21,12 +21,17 @@ typedef enum {
     T_IF, // if
     T_ELIF, // elif
     T_ELSE, // else
+    T_FOR, // for
+    T_WHILE, // while
+    T_TRUE, // TRUE
+    T_FALSE, // FALSE
     T_EQUAL, // ==
-    T_NOTEQUAL, // !=
-    T_LESSTHAN, // <
-    T_LESSTHANOREQUAL, // <=
-    T_GREATERTHAN, // >
-    T_GREATERTHANOREQUAL, // >=
+    T_NOTEQ, // !=
+    T_LT, // <
+    T_LTOREQ, // <=
+    T_GT, // >
+    T_GTOREQ, // >=
+    T_HONEY, // honey (to end control flow, loops, etc.)
     T_IDENTIFIER, // variable names
     T_LET, // let keyword for static variable declaration
     T_COLON, // :

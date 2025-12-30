@@ -24,7 +24,13 @@ ASTNode* parse_assignment(Parser* parser);
 ASTNode* parse_typed_assignment(Parser* parser, char* var_name);
 ASTNode* parse_immutable_assignment(Parser* parser, char* var_name);
 ASTNode* parse_immutable_typed_dec(Parser* parser, char* var_name);
+ASTNode* parse_statement(Parser* parser);
 ASTNode* parse_growl_statement(Parser* parser);
+ASTNode* parse_if_statement(Parser* parser);
+ASTNode* parse_elif_statement(Parser* parser);
+ASTNode* parse_else_statement(Parser* parser);
+ASTNode* parse_comparison(Parser* parser);
+ASTNode** parse_block_until_honey(Parser* parser, int* count);
 ASTNode* parse_line(Parser* parser); // entry point for a single line
 
 #endif // PARSER_H
