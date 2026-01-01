@@ -136,19 +136,22 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 print_value(condition);
                 printf("Condition is truthy, executing then branch\n");
                 printf("Then branch has %d statements\n", node->data.if_stmt.then_count);
+                Value last_result = nil_value();
                 for (int i = 0; i < node->data.if_stmt.then_count; i++) {
                     printf("Executing then statement %d\n", i);
                     Value result = eval(node->data.if_stmt.then_statements[i], table);
                     printf("Then statement %d executed\n", i);
                     if (is_error(result)) {
                         free_value(condition);
+                        free_value(last_result);
                         return result;
                     }
                     printf("Result of then statement %d: ", i);
-                    print_value(result);
-                    printf("\n");
+                    free_value(last_result);
+                    last_result = result;
                 }
-                return nil_value();
+                free_value(condition);
+                return last_result;
             } else {
                 // Check elif branches
                 ASTNode* elif_branch = node->data.if_stmt.elif_branch;
@@ -159,13 +162,19 @@ Value eval(ASTNode* node, SymbolTable* table) {
                     }
 
                     if (is_truthy(elif_condition)) {
+                        Value last_result = nil_value();
                         for (int i = 0; i < elif_branch->data.elif_stmt.count; i++) {
                             Value result = eval(elif_branch->data.elif_stmt.then_statements[i], table);
                             if (is_error(result)) {
+                                free_value(condition);
+                                free_value(last_result);
                                 return result;
                             }
+                            free_value(last_result);
+                            last_result = result;
                         }
-                        return nil_value();
+                        free_value(condition);
+                        return last_result;
                     }
                     elif_branch = elif_branch->data.elif_stmt.next_elif;
                 }
@@ -173,14 +182,19 @@ Value eval(ASTNode* node, SymbolTable* table) {
 
                 // Else branch
                 if (node->data.if_stmt.else_branch != NULL) {
+                    Value last_result = nil_value();
                     for (int i = 0; i < node->data.if_stmt.else_branch->data.else_stmt.count; i++) {
-                        Value result = eval(node->data.if_stmt.then_statements[i], table);
+                        Value result = eval(&node->data.if_stmt.else_branch->data.else_stmt.then_statements[i], table);
                         if (is_error(result)) {
+                            free_value(condition);
+                            free_value(last_result);
                             return result;
-                        
+                        }
+                        free_value(last_result);
+                        last_result = result;
                     }
-                    return nil_value();
-                }
+                    free_value(condition);
+                    return last_result;
             }
         }
         case AST_ELIF_STATEMENT: {
