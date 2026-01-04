@@ -152,7 +152,8 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 }
                 free_value(condition);
                 return last_result;
-            } else {
+            } else if (!is_truthy(condition)) {
+                printf("Condition is falsy, checking elif branches\n");
                 // Check elif branches
                 ASTNode* elif_branch = node->data.if_stmt.elif_branch;
                 while (elif_branch != NULL) {
@@ -162,6 +163,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
                     }
 
                     if (is_truthy(elif_condition)) {
+                        printf("Elif condition is truthy, executing then branch\n");
                         Value last_result = nil_value();
                         for (int i = 0; i < elif_branch->data.elif_stmt.count; i++) {
                             Value result = eval(elif_branch->data.elif_stmt.then_statements[i], table);
@@ -178,6 +180,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
                     }
                     elif_branch = elif_branch->data.elif_stmt.next_elif;
                 }
+                return nil_value();
             }
 
                 // Else branch
