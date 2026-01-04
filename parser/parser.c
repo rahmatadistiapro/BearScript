@@ -255,6 +255,14 @@ ASTNode* parse_statement(Parser* parser) {
         printf("Token Type: '%d', Token Value: '%s' (IF)", token->type, token->value);
         return parse_if_statement(parser);
     }
+    else if (token->type == T_ELIF) {
+        printf("Token Type: '%d', Token Value: '%s' (ELIF)", token->type, token->value);
+        return parse_elif_statement(parser);
+    }
+    else if (token->type == T_ELSE) {
+        printf("Token Type: '%d', Token Value: '%s' (ELSE)", token->type, token->value);
+        return parse_else_statement(parser);
+    }
     else if (token->type == T_IDENTIFIER) {
         printf("Token Type: '%d', Token Value: '%s' (IDENTIFIER)", token->type, token->value);
         char* var_name = _strdup(token->value);
@@ -297,8 +305,10 @@ ASTNode** parse_block_until_honey(Parser* parser, int* count) {
     statements = malloc(sizeof(ASTNode*) * capacity);
     printf("Initialized statements array with capacity %d\n", capacity);
 
-    while (parser->current_token->type != T_HONEY &&
-           parser->current_token->type != T_EOF) {
+    while ((parser->current_token->type != T_HONEY &&
+           parser->current_token->type != T_EOF) && 
+           (parser->current_token->type != T_ELIF &&
+           parser->current_token->type != T_ELSE)) {
         
         printf("DEBUG: Parsing statement (token type=%d, value='%s')\n",
                parser->current_token->type,
@@ -327,10 +337,23 @@ ASTNode** parse_block_until_honey(Parser* parser, int* count) {
     }
     
     printf("Finished parsing block, total statements: %d\n", *count);
-    
-    if (parser->current_token->type != T_HONEY) {
-        printf("Error: Expected 'honey' to end block\n");
-        exit(EXIT_FAILURE);
+    printf("Current token after block: type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
+
+    if (parser->current_token->type == T_ELIF) {
+        printf("found elif/else before honey\n");
+        return statements;
+    } else if (parser->current_token->type == T_ELSE) {
+        printf("found else before honey\n");
+        return statements;
+    }
+    if (parser->current_token->type != T_ELIF ||
+        parser->current_token->type != T_ELSE) {
+        if (parser->current_token->type != T_HONEY) {
+            printf("Error: Expected 'honey' to end block\n");
+            exit(EXIT_FAILURE);
+        }
     }
     
     parser_advance(parser); // eat 'honey'
@@ -338,17 +361,34 @@ ASTNode** parse_block_until_honey(Parser* parser, int* count) {
 }
 
 ASTNode* parse_if_statement(Parser* parser) {
+    printf("=== parse_if_statement (FIXED) ===\n");
+    printf("before eating 'if', current token type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
     parser_advance(parser); // eat 'if'
+    printf("after eating 'if', current token type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
     ASTNode* condition = parse_comparison(parser);
+    printf("codnition parsed, current token type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
 
     int then_count;
     ASTNode** then_statements = parse_block_until_honey(parser, &then_count);
+    printf("then_statements parsed, current token type=%d, value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
 
     ASTNode* elif_branch = NULL;
     ASTNode* else_branch = NULL;
 
     if (parser->current_token->type == T_ELIF) {
+        printf("Parsing elif branch\n");
         elif_branch = parse_elif_statement(parser);
+        printf("Elif branch parsed, current token type=%d, value='%s'\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
     }
     else if (parser->current_token->type == T_ELSE) {
         else_branch = parse_else_statement(parser);
@@ -665,7 +705,6 @@ TokenType parser_peek(Parser* parser) {
 
     return type;
 }
-
 
 ASTNode* parse_line(Parser* parser) {
     printf("\n=== PARSE_LINE ===\n");
