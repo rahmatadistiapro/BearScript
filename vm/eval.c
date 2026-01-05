@@ -118,7 +118,10 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
-            return value;
+            print_value(value);
+            printf("\n");
+            free_value(value);
+            return nil_value();
         }
         case AST_IF_STATEMENT: {
             printf("=== Evaluating If Statement ===\n");
