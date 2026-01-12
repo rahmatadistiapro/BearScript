@@ -1,28 +1,22 @@
 #include "D:/BearScript/include/eval.h"
 #include "D:/BearScript/include/Value.h"
 #include "D:/BearScript/include/symbol_table.h"
-#include <complex.h>
-#include <stdbool.h>
 #include <string.h>
 
 static bool is_truthy(Value value) {
-    if (is_boolean(value)) {
-        return as_boolean(value);
-    }
     if (is_nil(value)) {
         return false;
     }
-    if (is_number(value)) {
-        if (is_integer(value)) {
-            return as_integer(value) != 0;
-        } else if (is_float(value)) {
-            return as_float(value) != 0.0;
-        }
+    if (is_integer(value)) {
+        return as_integer(value) != 0;
+    }
+    if (is_float(value)) {
+        return as_float(value) != 0.0;
     }
     if (is_string(value)) {
         return strlen(as_string(value)) > 0;
     }
-    return false;
+    return true; // Default to true for other types
 }
 
 Value eval(ASTNode* node, SymbolTable* table) {
@@ -35,9 +29,6 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_STRING: {
             return string_value(_strdup(node->data.string.str_val));
-        }
-        case AST_BOOLEAN: {
-            return boolean_value(node->data.boolean.value);
         }
         case AST_VARIABLE: {
             Value value;
@@ -124,14 +115,8 @@ Value eval(ASTNode* node, SymbolTable* table) {
             return nil_value();
         }
         case AST_IF_STATEMENT: {
-            printf("=== Evaluating If Statement ===\n");
-            printf("Evaluating condition...\n");
-            printf("Condition AST Type: %d\n", node->data.if_stmt.condition->type);
             Value condition = eval(node->data.if_stmt.condition, table);
-            printf("Debug: Condition evaluated to type %d\n", condition.type);
-
             if (is_error(condition)) {
-                printf("Error evaluating condition\n");
                 return condition;
             }
 
@@ -142,7 +127,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 Value last_result = nil_value();
                 for (int i = 0; i < node->data.if_stmt.then_count; i++) {
                     printf("Executing then statement %d\n", i);
-                    Value result = eval(node->data.if_stmt.then_statements[i], table);
+                    Value result = eval(node->data.if_stmt.then_statement[i], table);
                     printf("Then statement %d executed\n", i);
                     if (is_error(result)) {
                         free_value(condition);
@@ -190,7 +175,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 if (node->data.if_stmt.else_branch != NULL) {
                     Value last_result = nil_value();
                     for (int i = 0; i < node->data.if_stmt.else_branch->data.else_stmt.count; i++) {
-                        Value result = eval(&node->data.if_stmt.else_branch->data.else_stmt.then_statements[i], table);
+                        Value result = eval(node->data.if_stmt.else_branch->data.else_stmt.then_statements[i], table);
                         if (is_error(result)) {
                             free_value(condition);
                             free_value(last_result);
@@ -204,10 +189,11 @@ Value eval(ASTNode* node, SymbolTable* table) {
             }
         }
         case AST_ELIF_STATEMENT: {
-            return error_value(_strdup("Unexpected elif statement, elif without if"));
+            // Elif statements are handled within the if statement case
+            return error_value(_strdup("Unexpected Elif, elif without if first"));
         }
         case AST_ELSE_STATEMENT: {
-            return error_value(_strdup("Unexpected else statement, else without if or elif"));
+            return error_value(_strdup("Unexpected Else, else without if, or elif first"));
         }
         case AST_BINARY_OP: {
             Value left = eval(node->data.binary_op.left, table);
@@ -261,48 +247,51 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 return error_value(_strdup("Type mismatch in operation"));
             }
         }
+        default: {
+            return error_value(_strdup("Unknown keyword"));
+        }
         case AST_COMPARE_OP: {
-            printf("=== Evaluating Comparison Operation ===\n");
-            printf("Operator Type: %d\n", node->data.compare_op.op);
             Value left = eval(node->data.compare_op.left, table);
-            printf("Left Value Type: %d\n", left.type);
             Value right = eval(node->data.compare_op.right, table);
-            printf("Right Value Type: %d\n", right.type);
 
             if (is_error(left)) {
                 free_value(right);
                 return left;
             }
             if (is_error(right)) {
-                free_value(left);
+                free_value(right);
                 return right;
             }
 
             if (is_number(left) && is_number(right)) {
-                double l = as_float(left);
-                double r = as_float(right);
+                double l = is_integer(left) ? (double)as_integer(left) : as_float(left);
+                double r = is_integer(right) ? (double)as_integer(right) : as_float(right);
 
-                bool result;
                 switch (node->data.compare_op.op) {
-                    case T_EQUAL:      { result = (l == r); break; }
-                    case T_NOTEQ:  { result = (l != r); break; }
-                    case T_LT:         { result = (l < r); break; }
-                    case T_LTOREQ:  { result = (l <= r); break; }
-                    case T_GT:         { result = (l > r); break; }
-                    case T_GTOREQ:  { result = (l >= r); break; }
-                    default: {
-                        free_value(left);
-                        free_value(right);
-                        return error_value(_strdup("Unknown comparison operator")); 
-                    }
+                    case T_EQUAL:  return boolean_value(l == r);
+                    case T_NOTEQ: return boolean_value(l != r);
+                    case T_LT:  return boolean_value(l < r);
+                    case T_LTOREQ: return boolean_value(l <= r);
+                    case T_GT:  return boolean_value(l > r);
+                    case T_GTOREQ: return boolean_value(l >= r);
+                    default:    return error_value(_strdup("Unknown comparison operator"));
                 }
-                free_value(left);
-                free_value(right);
-                return boolean_value(result);
             }
-            free_value(left);
-            free_value(right);
-            return error_value(_strdup("Comparison requires numbers"));
+            else if (is_string(left) && is_string(right)) {
+                int cmp = strcmp(as_string(left), as_string(right));
+                switch (node->data.compare_op.op) {
+                    case T_EQUAL:  return boolean_value(cmp == 0);
+                    case T_NOTEQ: return boolean_value(cmp != 0);
+                    case T_LT:  return boolean_value(cmp < 0);
+                    case T_LTOREQ: return boolean_value(cmp <= 0);
+                    case T_GT:  return boolean_value(cmp > 0);
+                    case T_GTOREQ: return boolean_value(cmp >= 0);
+                    default:    return error_value(_strdup("Unknown comparison operator"));
+                }
+            }
+            else {
+                return error_value(_strdup("Type mismatch in comparison operation"));
+            }
         }
     }
 }

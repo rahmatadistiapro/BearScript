@@ -32,12 +32,6 @@ void parser_advance(Parser *parser) {
 ASTNode* parse_factor(Parser* parser) {
     printf("=== parse_factor (FIXED) ===\n");
     Token* token = parser->current_token;
-    if ((token->type == T_HONEY || token->type == T_IF) ||
-        (token->type == T_ELIF || token->type == T_ELSE)) {
-            printf("DEBUG: parse_factor encountered block terminator '%s' (type='%d') - returning NULL\n",
-                   token->value ? token->value : "(null)", token->type);
-            return NULL;
-        }
     if (token->type == T_INTEGER) {
         ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
         node->type = AST_INTEGER;
@@ -88,11 +82,6 @@ ASTNode* parse_term(Parser* parser) {
     
     // Parse first factor
     ASTNode* result = parse_factor(parser);
-
-    if (result == NULL) {
-        printf("parse_term: factor result returned NULL (hit terminator)\n");
-        return NULL;
-    }
     
     // Keep combining with *, /, or % operators
     while (1) {
@@ -101,10 +90,6 @@ ASTNode* parse_term(Parser* parser) {
             parser_advance(parser);
             
             ASTNode* right = parse_factor(parser);
-            if (right == NULL) {
-                printf("Error: Expected expression after '*'\n");
-                exit(EXIT_FAILURE);
-            }
             
             ASTNode* new_node = malloc(sizeof(ASTNode));
             new_node->type = AST_BINARY_OP;
@@ -119,10 +104,6 @@ ASTNode* parse_term(Parser* parser) {
             parser_advance(parser);
             
             ASTNode* right = parse_factor(parser);
-            if (right == NULL) {
-                printf("Error: Expected expression after '/'\n");
-                exit(EXIT_FAILURE);
-            }
             
             ASTNode* new_node = malloc(sizeof(ASTNode));
             new_node->type = AST_BINARY_OP;
@@ -137,10 +118,6 @@ ASTNode* parse_term(Parser* parser) {
             parser_advance(parser);
             
             ASTNode* right = parse_factor(parser);
-            if (right == NULL) {
-                printf("Error: Expected expression after '%%'\n");
-                exit(EXIT_FAILURE);
-            }
             
             ASTNode* new_node = malloc(sizeof(ASTNode));
             new_node->type = AST_BINARY_OP;
@@ -165,11 +142,6 @@ ASTNode* parse_expression(Parser* parser) {
     
     // Parse first term
     ASTNode* result = parse_term(parser);
-    if (result == NULL) {
-        printf("parse_expression: term result returned NULL (hit terminator)\n");
-        return NULL;
-    }
-
     printf("After parse_term, current token: type=%d, token_value=%s\n", 
            parser->current_token->type, 
            parser->current_token->value ? parser->current_token->value : "NULL");
@@ -177,14 +149,6 @@ ASTNode* parse_expression(Parser* parser) {
     // Keep combining with + or - operators
     while (1) {
         printf("Loop check: current token type=%d, token_value=%s\n", parser->current_token->type, parser->current_token->value);
-        // Check if we hit a terminator
-        if (parser->current_token->type == T_HONEY ||
-            parser->current_token->type == T_ELSE ||
-            parser->current_token->type == T_ELIF) {
-            printf("parse_expression: hit terminator '%s'\n", parser->current_token->value);
-            break;
-        }
-
         // Check what operator we have (if any)
         if (parser->current_token->type == T_ADD) {
             printf("Found + operator\n");
@@ -194,10 +158,6 @@ ASTNode* parse_expression(Parser* parser) {
             
             // Parse the right side
             ASTNode* right = parse_term(parser);
-            if (right == NULL) {
-                printf("Error: Expected expression after '+'\n");
-                exit(EXIT_FAILURE);
-            }
             
             // Create new binary node: (left + right)
             ASTNode* new_node = malloc(sizeof(ASTNode));
@@ -223,10 +183,6 @@ ASTNode* parse_expression(Parser* parser) {
             
             // Parse the right side
             ASTNode* right = parse_term(parser);
-            if (right == NULL) {
-                printf("Error: Expected expression after '-'\n");
-                exit(EXIT_FAILURE);
-            }
             
             // Create new binary node: (left - right)
             ASTNode* new_node = malloc(sizeof(ASTNode));
@@ -255,200 +211,78 @@ ASTNode* parse_expression(Parser* parser) {
     return result;
 }
 
-ASTNode* parse_comparison(Parser* parser) {
-    printf("=== parse_comparison (FIXED) ===\n");
-    ASTNode* left = parse_expression(parser);
-
-    if (left == NULL) {
-        printf("parse_comparison: expression result returned NULL (hit terminator)\n");
-        return NULL;
-    }
-    
-    TokenType type = parser->current_token->type;
-    if (type == T_EQUAL || type == T_NOTEQ ||
-        type == T_LT || type == T_LTOREQ ||
-        type == T_GT || type == T_GTOREQ) {
-        printf("Found comparison operator '%s'\n", parser->current_token->value);
-        
-        TokenType op = parser->current_token->type;
-        parser_advance(parser); // eat operator
-        
-        ASTNode* right = parse_expression(parser);
-        if (right == NULL) {
-            printf("Error: Expected expression after comparison operator\n");
-            exit(EXIT_FAILURE);
-        }
-        
-        ASTNode* node = malloc(sizeof(ASTNode));
-        node->type = AST_COMPARE_OP;
-        node->data.compare_op.left = left;
-        node->data.compare_op.op = op;
-        node->data.compare_op.right = right;
-        
-        return node;
-    }
-    
-    return left; // No comparison, just return the expression
-}
-
 ASTNode* parse_statement(Parser* parser) {
-    printf("=== parse_statement (FIXED) ===\n");
-    printf("current_token: type=%d, value='%s'\n",
+    printf("\n=== parse_statement (FIXED) ===\n");
+    printf("Current token: type=%d, value='%s'\n",
            parser->current_token->type,
            parser->current_token->value ? parser->current_token->value : "(null)");
+
     Token* token = parser->current_token;
-    printf("Token type: %d\n", token->type);
+    printf("Token Type: %d\n", token->type);
 
     if (token->type == T_GROWL) {
-        printf("Token Type: '%d', Token Value: '%s' (GROWL)", token->type, token->value);
+        printf("Token Type: %d, Token Value: %s (GROWL)\n", token->type, token->value);
         return parse_growl_statement(parser);
     }
     else if (token->type == T_IF) {
-        printf("Token Type: '%d', Token Value: '%s' (IF)", token->type, token->value);
+        printf("Token Type: %d, Token Value: %s (IF)\n", token->type, token->value);
         return parse_if_statement(parser);
     }
     else if (token->type == T_ELIF) {
-        printf("Token Type: '%d', Token Value: '%s' (ELIF)", token->type, token->value);
+        printf("Token Type: %d, Token Value: %s (ELIF)\n", token->type, token->value);
         return parse_elif_statement(parser);
     }
     else if (token->type == T_ELSE) {
-        printf("Token Type: '%d', Token Value: '%s' (ELSE)", token->type, token->value);
+        printf("Token Type: %d, Token Value: %s (ELSE)\n", token->type, token->value);
         return parse_else_statement(parser);
     }
-    else if (token->type == T_IDENTIFIER) {
-        printf("Token Type: '%d', Token Value: '%s' (IDENTIFIER)", token->type, token->value);
-        char* var_name = _strdup(token->value);
-        parser_advance(parser); // eat IDENT
-
-        if (parser->current_token->type == T_COLON) {
-            printf("Detected typed assignment for variable '%s'\n", var_name);
-            return parse_typed_assignment(parser, var_name);
-        }
-        else if (parser->current_token->type == T_ASSIGN) {
-            printf("Detected assignment for variable '%s'\n", var_name);
-            return parse_assignment(parser);
-        }
-        else {
-            printf("Error: Unexpected token after identifier '%s'\n", var_name);
-            exit(EXIT_FAILURE);
-        }
-    }
     else {
-        printf("Error: Unexpected token '%s' in statement\n", token->value);
+        printf("Error: Unexpected keyword '%s'\n", token->value);
         exit(EXIT_FAILURE);
     }
+    return parse_line(parser);
 }
 
 ASTNode* parse_growl_statement(Parser* parser) {
     printf("Parsing growl statement\n");
     ASTNode* node = malloc(sizeof(ASTNode));
     node->type = AST_GROWL_STATEMENT;
-
     parser_advance(parser); // eat 'GROWL' token
-    node->data.growl_stmt.expression = parse_comparison(parser);
-
-    if (node->data.growl_stmt.expression == NULL) {
-        printf("Error: Expected expression after 'growl'\n");
-        exit(EXIT_FAILURE);
-    }
+    node->data.growl_stmt.expression = parse_expression(parser);
     return node;
-}
-
-ASTNode** parse_block_until_honey(Parser* parser, int* count) {
-    printf("=== parse_block_until_honey ===\n");
-    ASTNode** statements = NULL;
-    int capacity = 4;
-    *count = 0;
-
-    statements = malloc(sizeof(ASTNode*) * capacity);
-    printf("Initialized statements array with capacity %d\n", capacity);
-
-    // Only stop at honey or EOF
-    while (parser->current_token->type != T_HONEY &&
-           parser->current_token->type != T_EOF) {
-        
-        printf("DEBUG: Parsing statement (token type=%d, value='%s')\n",
-               parser->current_token->type,
-               parser->current_token->value ? parser->current_token->value : "(null)");
-        
-        // Parse the statement
-        ASTNode* stmt = parse_statement(parser);
-        
-        printf("Parsed statement type=%d, current token type=%d, value='%s'\n",
-               stmt ? stmt->type : -1,
-               parser->current_token->type,
-               parser->current_token->value ? parser->current_token->value : "(null)");
-        
-        if (stmt) {
-            // Check if we need to grow the array
-            if (*count >= capacity) {
-                capacity *= 2;
-                statements = realloc(statements, sizeof(ASTNode*) * capacity);
-                printf("DEBUG: Grew array to capacity %d\n", capacity);
-            }
-            
-            printf("DEBUG: Adding statement type %d to block (index %d)\n", 
-                   stmt->type, *count);
-            statements[(*count)++] = stmt;
-        }
-        
-        // Check if the next token starts a new control flow (elif/else)
-        // If so, stop parsing this block
-        if (parser->current_token->type == T_ELIF ||
-            parser->current_token->type == T_ELSE) {
-            printf("Found '%s' - ending current block\n", parser->current_token->value);
-            break;
-        }
-    }
-    
-    printf("Finished parsing block, total statements: %d\n", *count);
-    printf("Current token after block: type=%d, value='%s'\n",
-           parser->current_token->type,
-           parser->current_token->value ? parser->current_token->value : "(null)");
-    
-    // ONLY require honey if we're not at elif/else
-    if (parser->current_token->type != T_HONEY &&
-        parser->current_token->type != T_ELIF &&
-        parser->current_token->type != T_ELSE) {
-        printf("Error: Expected 'honey', 'elif', or 'else', got '%s'\n",
-               parser->current_token->value ? parser->current_token->value : "(null)");
-        exit(EXIT_FAILURE);
-    }
-    
-    return statements;
 }
 
 ASTNode* parse_if_statement(Parser* parser) {
     printf("=== parse_if_statement (FIXED) ===\n");
-    printf("before eating 'if', current token type=%d, value='%s'\n",
-           parser->current_token->type,
-           parser->current_token->value ? parser->current_token->value : "(null)");
-    parser_advance(parser); // eat 'if'
-    printf("after eating 'if', current token type=%d, value='%s'\n",
-           parser->current_token->type,
-           parser->current_token->value ? parser->current_token->value : "(null)");
-    ASTNode* condition = parse_comparison(parser);
-    printf("codnition parsed, current token type=%d, value='%s'\n",
+    printf("before eating IF: token type='%d' token value='%s'\n",
            parser->current_token->type,
            parser->current_token->value ? parser->current_token->value : "(null)");
 
-    int then_count;
+    parser_advance(parser); // eat 'IF' token
+    printf("after eating IF: token type='%d' token value='%s'\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
+
+    ASTNode* condition = parse_comparison(parser);
+    printf("condition parsed, current token: type=%d, value=%s\n",
+           parser->current_token->type,
+           parser->current_token->value ? parser->current_token->value : "(null)");
+
+    int then_count = 0;
     ASTNode** then_statements = parse_block_until_honey(parser, &then_count);
     printf("then_statements parsed, current token type=%d, value='%s'\n",
            parser->current_token->type,
            parser->current_token->value ? parser->current_token->value : "(null)");
-
+    
     ASTNode* elif_branch = NULL;
     ASTNode* else_branch = NULL;
 
     if (parser->current_token->type == T_ELIF) {
-        printf("Parsing elif branch\n");
+        printf("Found ELIF after IF block\n");
         elif_branch = parse_elif_statement(parser);
-        printf("Elif branch parsed, current token type=%d, value='%s'\n",
-               parser->current_token->type,
-               parser->current_token->value ? parser->current_token->value : "(null)");
     }
     else if (parser->current_token->type == T_ELSE) {
+        printf("Found ELSE after IF block\n");
         else_branch = parse_else_statement(parser);
     }
 
@@ -456,63 +290,139 @@ ASTNode* parse_if_statement(Parser* parser) {
     node->type = AST_IF_STATEMENT;
 
     node->data.if_stmt.condition = condition;
-    node->data.if_stmt.then_statements = then_statements;
-
+    node->data.if_stmt.then_statement = then_statements;
     node->data.if_stmt.then_count = then_count;
     node->data.if_stmt.elif_branch = elif_branch;
-
     node->data.if_stmt.else_branch = else_branch;
     return node;
 }
 
 ASTNode* parse_elif_statement(Parser* parser) {
-    parser_advance(parser); // eat 'elif'
+    printf("=== parse_elif_statement (FIXED) ===\n");
+    parser_advance(parser); // eat 'ELIF' token
     ASTNode* condition = parse_comparison(parser);
-
-    int then_count;
+    int then_count = 0;
     ASTNode** then_statements = parse_block_until_honey(parser, &then_count);
 
     ASTNode* next_elif = NULL;
     ASTNode* else_branch = NULL;
 
     if (parser->current_token->type == T_ELIF) {
+        printf("Found ELIF after ELIF block\n");
         next_elif = parse_elif_statement(parser);
     }
     else if (parser->current_token->type == T_ELSE) {
+        printf("Found ELSE after ELIF block\n");
         else_branch = parse_else_statement(parser);
     }
 
-    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
+    ASTNode* node = malloc(sizeof(ASTNode));
     node->type = AST_ELIF_STATEMENT;
 
     node->data.elif_stmt.condition = condition;
     node->data.elif_stmt.then_statements = then_statements;
-
     node->data.elif_stmt.count = then_count;
+
     node->data.elif_stmt.next_elif = next_elif;
     node->data.elif_stmt.else_branch = else_branch;
     return node;
 }
 
 ASTNode* parse_else_statement(Parser* parser) {
-    parser_advance(parser); // eat 'else'
-
-    int count;
-    ASTNode** statements = parse_block_until_honey(parser, &count);
+    printf("=== parse_else_statement (FIXED) ===\n");
+    parser_advance(parser); // eat 'ELSE' token
+    int then_count = 0;
+    ASTNode** then_statements = parse_block_until_honey(parser, &then_count);
 
     ASTNode* node = malloc(sizeof(ASTNode));
     node->type = AST_ELSE_STATEMENT;
-
-    node->data.else_stmt.then_statements = *statements;
-    node->data.else_stmt.count = count;
+    node->data.else_stmt.then_statements = then_statements;
+    node->data.else_stmt.count = then_count;
     return node;
 }
 
-ASTNode* parse_assignment(Parser* parser) {
-    // IDENT already confirmed
-    char* var_name = _strdup(parser->current_token->value);
-    parser_advance(parser); // eat IDENT
+ASTNode* parse_comparison(Parser* parser) {
+    printf("=== parse_comparison (FIXED) ===\n");
+    ASTNode* left = parse_expression(parser);
 
+    TokenType op = parser->current_token->type;
+    if (op == T_EQUAL || op == T_NOTEQ || op == T_LT || op == T_LTOREQ ||
+        op == T_GT || op == T_GTOREQ) {
+        printf("Found comparison operator: %d\n", op);
+        parser_advance(parser); // eat operator
+
+        ASTNode* right = parse_expression(parser);
+
+        ASTNode* node = malloc(sizeof(ASTNode));
+        node->type = AST_COMPARE_OP;
+        node->data.compare_op.left = left;
+        node->data.compare_op.op = op;
+        node->data.compare_op.right = right;
+
+        return node;
+    } else {
+        printf("Error: Expected comparison operator, found token type=%d, value='%s'\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        exit(EXIT_FAILURE);
+    }
+}
+
+ASTNode** parse_block_until_honey(Parser* parser, int* count) {
+    printf("=== parse_block_until_honey (FIXED) ===\n");
+    ASTNode** statements = NULL;
+    int capacity = 4;
+
+    *count = 0;
+    statements = malloc(capacity * sizeof(ASTNode*));
+
+    while (parser->current_token->type != T_HONEY &&
+           parser->current_token->type != T_EOF) {
+        printf("DEBUG: Parsing statement, (Token type=%d, value='%s')\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        ASTNode* stmt = parse_statement(parser);
+
+        if (stmt) {
+            if (*count >= capacity) {
+                capacity *= 2;
+                statements = realloc(statements, sizeof(ASTNode*) * capacity);
+            }
+        }
+        statements[*(count)++] = stmt;
+        if (parser->current_token->type == T_HONEY) {
+            parser_advance(parser); // eat 'HONEY'
+        }
+        else if (parser->current_token->type == T_ELIF || parser->current_token->type == T_ELSE) {
+            printf("Found '%s' - ending current block\n", parser->current_token->value);
+            break;
+        }
+        else {
+            printf("Error: Expected 'honey' to end block\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (parser->current_token->type != T_HONEY &&
+        parser->current_token->type != T_ELIF &&
+        parser->current_token->type != T_ELSE) {
+            printf("Error: Expected 'honey', 'elif', or 'else' after block got '%s'\n",
+                   parser->current_token->value ? parser->current_token->value : "(null)");
+            exit(EXIT_FAILURE);
+        }
+
+    return statements;
+}
+
+ASTNode* parse_assignment(Parser* parser) {
+    printf("=== parse_assignment (FIXED) ===\n");
+    // IDENT already confirmed
+
+    char* var_name = _strdup(parser->current_token->value);
+    printf("var name: '%s'\n",
+           parser->current_token->value);
+
+    parser_advance(parser); // eat IDENT
     parser_advance(parser); // eat '='
 
     ASTNode* value = parse_expression(parser);
@@ -764,20 +674,58 @@ TokenType parser_peek(Parser* parser) {
     return type;
 }
 
+
 ASTNode* parse_line(Parser* parser) {
     printf("\n=== PARSE_LINE ===\n");
     printf("Token: '%s' (type: %d)\n",
            parser->current_token->value, parser->current_token->type);
-
-    ASTNode* result = parse_statement(parser);
-    if (parser->current_token->type == T_HONEY) {
-        parser_advance(parser); // eat 'honey'
+    
+    if (parser->current_token->type == T_IF) {
+        printf("It's an if statement!\n");
+        return parse_if_statement(parser);
     }
-    if (parser->current_token->type != T_EOF) {
-        printf("Error: Unexpected token after statement: '%s'\n",
-               parser->current_token->value);
-        exit(EXIT_FAILURE);
+    // Check if it's an assignment: identifier followed by '='
+    if (parser->current_token->type == T_IDENTIFIER) {
+        char* var_name = _strdup(parser->current_token->value);
+        // Use parser_peek to check next token without consuming current
+        TokenType next = parser_peek(parser);
+        printf("Next token type: %d\n", next);
+        
+        if (next == T_COLON) {
+            printf("It's a typed assignment!\n");
+            return parse_typed_assignment(parser, var_name);
+        }
+        else if (next == T_ASSIGN) {
+            printf("It's a dynamic assignment!\n");
+            free(var_name);
+            return parse_assignment(parser);
+        }
+        free(var_name);
+    }
+    else if (parser->current_token->type == T_LET) {
+        printf("It's an immutable assignment!\n");
+        printf("Before eating 'let', current token: type=%d, value=%s\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        parser_advance(parser); // eat 'let'
+        printf("After eating 'let', current token: type=%d, value=%s\n",
+               parser->current_token->type,
+               parser->current_token->value ? parser->current_token->value : "(null)");
+        if (parser->current_token->type != T_IDENTIFIER) {
+            printf("Error: Expected identifier after 'let'\n");
+            printf("Found token type=%d, value='%s'\n",
+                   parser->current_token->type,
+                   parser->current_token->value ? parser->current_token->value : "(null)");
+            exit(EXIT_FAILURE);
+        }
+        char* var_name = _strdup(parser->current_token->value);
+        return parse_immutable_assignment(parser, var_name);
+    }
+    else if (parser->current_token->type == T_GROWL) {
+        printf("It's a growl statement!\n");
+        return parse_growl_statement(parser);
     }
     
-    return result;
+    printf("Parsing as expression\n");
+    return parse_expression(parser);
 }

@@ -12,11 +12,11 @@ typedef enum {
     AST_STRING, // 5
     AST_BOOLEAN, // 6
     AST_GROWL_STATEMENT, // 7
-    AST_VARIABLE, // 8
-    AST_BINARY_OP, // 9
-    AST_IF_STATEMENT, // 10
-    AST_ELIF_STATEMENT, // 11
-    AST_ELSE_STATEMENT, // 12
+    AST_IF_STATEMENT, // 8
+    AST_ELIF_STATEMENT, // 9
+    AST_ELSE_STATEMENT, // 10
+    AST_VARIABLE, // 11
+    AST_BINARY_OP, // 12
     AST_COMPARE_OP // 13
 } ASTNodeType;
 
@@ -27,36 +27,26 @@ typedef struct ASTNode {
             struct ASTNode* expression;
         } growl_stmt;
 
-        struct {
+        struct {           // for if statement
             struct ASTNode* condition;
-            struct ASTNode** then_statements;
+            struct ASTNode** then_statement;
             int then_count;
-            struct ASTNode* elif_branch; // array of elif branches
+            struct ASTNode* elif_branch; // array of elif branch
             struct ASTNode* else_branch; // else branch
         } if_stmt;
-
+        
         struct {
             struct ASTNode* condition;
             struct ASTNode** then_statements;
             int count;
-            struct ASTNode* next_elif; // next elif branch
+            struct ASTNode* next_elif; // next elif statement
             struct ASTNode* else_branch; // else branch
         } elif_stmt;
-
+        
         struct {
-            struct ASTNode* then_statements;
+            struct ASTNode** then_statements;
             int count;
         } else_stmt;
-
-        struct {
-            struct ASTNode* left;
-            TokenType op;
-            struct ASTNode* right;
-        } compare_op;
-
-        struct {
-            bool value;
-        } boolean;
         struct {
             char* str_val;
         } string;
@@ -90,6 +80,12 @@ typedef struct ASTNode {
             TokenType op;
             struct ASTNode* right;
         } binary_op;
+
+        struct {           // for comparison operations
+            struct ASTNode* left;
+            TokenType op;
+            struct ASTNode* right;
+        } compare_op;
     } data;  // Give the union a name!
 } ASTNode;
 
