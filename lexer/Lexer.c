@@ -38,10 +38,7 @@ static void lex_identifier(Lexer* lexer, Token* token) {
     token->value[length] = '\0';
 
     // --- KEY CHANGE HERE ---
-    if (strcmp(token->value, "growl") == 0) {
-        token->type = T_GROWL;
-    }
-    else if (strcmp(token->value, "if") == 0) {
+    if (strcmp(token->value, "if") == 0) {
         token->type = T_IF;
     }
     else if (strcmp(token->value, "elif") == 0) {

@@ -57,9 +57,9 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 assign_variable(table, var_name, value);
                 return value;
             } 
-            else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
+            else if (strcmp(type_name, "int") == 0) {
                 if (!is_integer(value)) {
-                    return error_value(_strdup("Number variable requires to have a number value"));
+                    return error_value(_strdup("Integer variable requires to have a number value"));
                 }
                 assign_variable(table, var_name, value);
                 return value;
@@ -91,9 +91,9 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 }
                 return value;
             } 
-            else if (strcmp(type_name, "int") == 0 || strcmp(type_name, "float") == 0) {
+            else if (strcmp(type_name, "int") == 0) {
                 if (!is_integer(value)) {
-                    return error_value(_strdup("Number variable requires to have a number value"));
+                    return error_value(_strdup("Integer variable requires to have a number value"));
                 }
                 return value;
             }
@@ -109,10 +109,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
-            print_value(value);
-            printf("\n");
-            free_value(value);
-            return nil_value();
+            return value;
         }
         case AST_IF_STATEMENT: {
             Value condition = eval(node->data.if_stmt.condition, table);

@@ -20,7 +20,10 @@ typedef enum {
     // load/store operations
     BC_LOAD_CONST = 0X01, // rX, const_index
     BC_LOAD_GLOBAL = 0X02, // rX, global_index
-    BC_STORE_GLOBAL = 0X03, // rX, global_index
+    BC_STORE_CONST = 0X03, // rX, const_index
+
+    // I/O task
+    BC_PRINT = 0x04, // rX
 
     // arithmetic operations
     BC_ADD = 0x10, // rX, rY, rZ (general add)
@@ -82,7 +85,7 @@ typedef enum {
     BC_POP = 0X51, // rX
 
     // other operations
-    BC_HALT = 0XFF, // halt the program
+    BC_HALT = 0XFF, // halt the program (stops execution)
 } BearCode;
 
 typedef struct {

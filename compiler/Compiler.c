@@ -1,4 +1,5 @@
 #include "D:/BearScript/include/Compiler.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,7 +15,9 @@ static uint8_t allocate_reg(BearCompiler* compiler) {
 }
 
 static void free_reg(BearCompiler* compiler, uint8_t reg) {
-    // In simple allocator, just track max
+    if (reg != 255 && reg + 1 == compiler->next_reg) {
+        compiler->next_reg--;
+    }
 }
 
 // Symbol table helpers
@@ -85,6 +88,20 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             write_instruction(compiler->chunk, BC_LOAD_CONST, reg, const_idx, 0, 0);
             return reg;
         }
+
+        case AST_GROWL_STATEMENT: {
+            uint8_t arg_reg = compile_expression(compiler, expr->data.growl_stmt.expression);
+            if (compiler->had_error) return 255;
+
+            uint8_t func_reg = allocate_reg(compiler);
+            int global_idx = add_global(compiler->chunk, "printf");
+
+            write_instruction(compiler->chunk, BC_LOAD_GLOBAL, func_reg, global_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_CALL, func_reg, func_reg, 1, arg_reg);
+            
+            free_reg(compiler, arg_reg);
+            return func_reg;
+        }
         
         case AST_VARIABLE: {
             // Look up variable in symbol table
@@ -102,6 +119,28 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
                 write_instruction(compiler->chunk, BC_LOAD_GLOBAL, reg, global_idx, 0, 0);
                 return reg;
             }
+        }
+
+        case AST_ASSIGN: {
+            // Evaluate the value on the right side of '='
+            uint8_t val_reg = compile_expression(compiler, expr->data.assign.value);
+            if (compiler->had_error) return 255;
+
+            // Map the variable name to this register in your symbol table
+            add_symbol(compiler, expr->data.assign.var_name, val_reg);
+
+            return val_reg;
+        }
+
+        case AST_IMMUTABLE_ASSIGN: {
+            // Evaluate the value on the right side of 'let'
+            uint8_t val_reg = compile_expression(compiler, expr->data.immutable_assign.value);
+            if (compiler->had_error) return 255;
+
+            // Map the variable name to this register in your symbol table
+            add_symbol(compiler, expr->data.immutable_assign.var_name, val_reg);
+
+            return val_reg;
         }
         
         case AST_BINARY_OP: {
@@ -242,7 +281,7 @@ void compile_assign(BearCompiler* compiler, ASTNode* node) {
     
     // Also store as global for persistence
     int global_idx = add_global(compiler->chunk, var_name);
-    write_instruction(compiler->chunk, BC_STORE_GLOBAL, value_reg, global_idx, 0, 0);
+    write_instruction(compiler->chunk, BC_STORE_CONST, value_reg, global_idx, 0, 0);
     
     free_reg(compiler, value_reg);
 }

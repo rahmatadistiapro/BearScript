@@ -16,6 +16,7 @@ typedef struct {
 
 void parser_init(Parser* parser, Lexer* lexer, SymbolTable* table);
 void parser_advance(Parser* parser);
+void parse_function_call(Parser* parser, char* name);
 TokenType parser_peek(Parser* parser);
 ASTNode* parse_factor(Parser* parser);
 ASTNode* parse_term(Parser* parser);

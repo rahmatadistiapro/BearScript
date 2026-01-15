@@ -252,6 +252,26 @@ ASTNode* parse_growl_statement(Parser* parser) {
     return node;
 }
 
+void parse_function_call(Parser *parser, char *name) {
+    if (parser->current_token->type != T_LPAREN) {
+        printf("Error: Expected '(' after function name '%s'\n", name);
+        exit(EXIT_FAILURE);
+    }
+    parser_advance(parser); // eat '('
+
+    if (parser->current_token->type != T_RPAREN) {
+        printf("Error: Expected ')' after function call arguments for '%s'\n", name);
+        exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(name, "growl") == 0) {
+        return parse_growl_statement(parser);
+    } else {
+        printf("Error: Unknown function '%s'\n", name);
+        exit(EXIT_FAILURE);
+    }
+}
+
 ASTNode* parse_if_statement(Parser* parser) {
     printf("=== parse_if_statement (FIXED) ===\n");
     printf("before eating IF: token type='%d' token value='%s'\n",
@@ -690,6 +710,12 @@ ASTNode* parse_line(Parser* parser) {
         // Use parser_peek to check next token without consuming current
         TokenType next = parser_peek(parser);
         printf("Next token type: %d\n", next);
+
+        if (next == T_LPAREN) {
+            printf("It's a function call!\n");
+            free(var_name);
+            return parse_function_call(parser);
+        }
         
         if (next == T_COLON) {
             printf("It's a typed assignment!\n");
