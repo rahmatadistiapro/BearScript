@@ -220,11 +220,7 @@ ASTNode* parse_statement(Parser* parser) {
     Token* token = parser->current_token;
     printf("Token Type: %d\n", token->type);
 
-    if (token->type == T_GROWL) {
-        printf("Token Type: %d, Token Value: %s (GROWL)\n", token->type, token->value);
-        return parse_growl_statement(parser);
-    }
-    else if (token->type == T_IF) {
+    if (token->type == T_IF) {
         printf("Token Type: %d, Token Value: %s (IF)\n", token->type, token->value);
         return parse_if_statement(parser);
     }
@@ -243,8 +239,8 @@ ASTNode* parse_statement(Parser* parser) {
     return parse_line(parser);
 }
 
-ASTNode* parse_growl_statement(Parser* parser) {
-    printf("Parsing growl statement\n");
+ASTNode* parse_growl_function(Parser* parser) {
+    printf("Parsing growl sfunction\n");
     ASTNode* node = malloc(sizeof(ASTNode));
     node->type = AST_GROWL_STATEMENT;
     parser_advance(parser); // eat 'GROWL' token
@@ -252,22 +248,25 @@ ASTNode* parse_growl_statement(Parser* parser) {
     return node;
 }
 
-void parse_function_call(Parser *parser, char *name) {
+ASTNode* parse_function_call(Parser *parser, char *name) {
+    printf("=== parse_function_call (FIXED) ===\n");
+    parser_advance(parser); // eat '('
     if (parser->current_token->type != T_LPAREN) {
         printf("Error: Expected '(' after function name '%s'\n", name);
         exit(EXIT_FAILURE);
     }
-    parser_advance(parser); // eat '('
 
-    if (parser->current_token->type != T_RPAREN) {
-        printf("Error: Expected ')' after function call arguments for '%s'\n", name);
+
+    printf("Function name: %s\n", name);
+    if (strcmp(name, "growl") == 0) {
+        return parse_growl_function(parser);
+    } else {
+        printf("Error: Unknown function '%s'\n", name);
         exit(EXIT_FAILURE);
     }
 
-    if (strcmp(name, "growl") == 0) {
-        return parse_growl_statement(parser);
-    } else {
-        printf("Error: Unknown function '%s'\n", name);
+    if (parser->current_token->type != T_RPAREN) {
+        printf("Error: Expected ')' after function call\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -694,7 +693,6 @@ TokenType parser_peek(Parser* parser) {
     return type;
 }
 
-
 ASTNode* parse_line(Parser* parser) {
     printf("\n=== PARSE_LINE ===\n");
     printf("Token: '%s' (type: %d)\n",
@@ -713,8 +711,9 @@ ASTNode* parse_line(Parser* parser) {
 
         if (next == T_LPAREN) {
             printf("It's a function call!\n");
+            ASTNode* node = parse_function_call(parser, var_name);
             free(var_name);
-            return parse_function_call(parser);
+            return node;
         }
         
         if (next == T_COLON) {
@@ -746,10 +745,6 @@ ASTNode* parse_line(Parser* parser) {
         }
         char* var_name = _strdup(parser->current_token->value);
         return parse_immutable_assignment(parser, var_name);
-    }
-    else if (parser->current_token->type == T_GROWL) {
-        printf("It's a growl statement!\n");
-        return parse_growl_statement(parser);
     }
     
     printf("Parsing as expression\n");

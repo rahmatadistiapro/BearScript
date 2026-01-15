@@ -1,6 +1,6 @@
 name = "John"
-growl name
+growl(name)
 1+1
 age: int = 30
 salary: int = 1999
-growl salary + age
+growl(salary + age)

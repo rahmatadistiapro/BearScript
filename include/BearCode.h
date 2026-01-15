@@ -22,7 +22,7 @@ typedef enum {
     BC_LOAD_GLOBAL = 0X02, // rX, global_index
     BC_STORE_CONST = 0X03, // rX, const_index
 
-    // I/O task
+    // built-in functions
     BC_PRINT = 0x04, // rX
 
     // arithmetic operations

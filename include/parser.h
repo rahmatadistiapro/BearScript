@@ -16,7 +16,6 @@ typedef struct {
 
 void parser_init(Parser* parser, Lexer* lexer, SymbolTable* table);
 void parser_advance(Parser* parser);
-void parse_function_call(Parser* parser, char* name);
 TokenType parser_peek(Parser* parser);
 ASTNode* parse_factor(Parser* parser);
 ASTNode* parse_term(Parser* parser);
@@ -25,8 +24,9 @@ ASTNode* parse_assignment(Parser* parser);
 ASTNode* parse_typed_assignment(Parser* parser, char* var_name);
 ASTNode* parse_immutable_assignment(Parser* parser, char* var_name);
 ASTNode* parse_immutable_typed_dec(Parser* parser, char* var_name);
+ASTNode* parse_function_call(Parser* parser, char* name);
 ASTNode* parse_statement(Parser* parser);
-ASTNode* parse_growl_statement(Parser* parser);
+ASTNode* parse_growl_function(Parser* parser);
 ASTNode* parse_if_statement(Parser* parser);
 ASTNode* parse_elif_statement(Parser* parser);
 ASTNode* parse_else_statement(Parser* parser);

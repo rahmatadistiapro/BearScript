@@ -94,7 +94,7 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             if (compiler->had_error) return 255;
 
             uint8_t func_reg = allocate_reg(compiler);
-            int global_idx = add_global(compiler->chunk, "printf");
+            int global_idx = add_global(compiler->chunk, "print");
 
             write_instruction(compiler->chunk, BC_LOAD_GLOBAL, func_reg, global_idx, 0, 0);
             write_instruction(compiler->chunk, BC_CALL, func_reg, func_reg, 1, arg_reg);
