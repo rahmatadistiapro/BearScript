@@ -1,0 +1,14 @@
+Source:
+name = "John"
+
+Tokens(by Lexer):
+IDENTIFIER(name), ASSIGN(=), STRING("John")
+
+AST(by Parser):
+ASSIGN {
+    var_name: "name",
+    value: STRING("John")
+}
+
+Future Register-Based Bytecode(by Compiler):
+LOAD_CONST R0, "John"
