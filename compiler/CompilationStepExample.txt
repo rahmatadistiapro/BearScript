@@ -38,3 +38,44 @@ GROWL {
 Future Register-Based Bytecode(by Compiler):
 ADD R0, 42, 58 // adds the constants 42 and 58, stores in R0
 PRINT "Computation complete!"
+
+Source:
+message = "Hello, World!"
+growl(message)
+name = "Jake"
+age: int = 30
+name1 = name
+
+Tokens(by Lexer):
+IDENTIFIER(message), ASSIGN(=), STRING("Hello, World!"), NEWLINE,
+GROWL(growl), LPAREN(()), IDENTIFIER(message), RPAREN(), NEWLINE,
+IDENTIFIER(name), ASSIGN(=), STRING("Jake"), NEWLINE,
+IDENTIFIER(age), COLON(:), IDENTIFIER(int), ASSIGN(=), NUMBER(30), NEWLINE
+
+AST(by Parser):
+ASSIGN {
+    var_name: "message",
+    value: STRING("Hello, World!")
+}
+
+GROWL {
+    expression: IDENTIFIER("message")
+}
+
+ASSIGN {
+    var_name: "name",
+    value: STRING("Jake")
+}
+
+ASSIGN {
+    var_name: "age",
+    type_annotation: "int",
+    value: INTEGER(30)
+}
+
+Future Register-Based Bytecode(by Compiler):
+LOADC R0, "Hello, World!"
+PRINT R0
+LOADC R1, "Jake"
+LOADC R2, 30
+MOV R3, R1

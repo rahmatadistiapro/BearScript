@@ -114,7 +114,19 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
-            return growl(as_string(value)), nil_value();
+            if (is_string(value)) {
+                growl(as_string(value));
+            } else if (is_integer(value)) {
+                char buffer[32];
+                sprintf(buffer, "%ld", as_integer(value));
+                growl(buffer);
+            } else if (is_float(value)) {
+                char buffer[32];
+                sprintf(buffer, "%f", as_float(value));
+                growl(buffer);
+            } else {
+                growl("Unsupported type for growl\n");
+            }
         }
         case AST_IF_STATEMENT: {
             Value condition = eval(node->data.if_stmt.condition, table);

@@ -93,14 +93,11 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             uint8_t arg_reg = compile_expression(compiler, expr->data.growl_stmt.expression);
             if (compiler->had_error) return 255;
 
-            uint8_t func_reg = allocate_reg(compiler);
-            int global_idx = add_global(compiler->chunk, "print");
-
-            write_instruction(compiler->chunk, BC_LOAD_GLOBAL, func_reg, global_idx, 0, 0);
-            write_instruction(compiler->chunk, BC_CALL, func_reg, func_reg, 1, arg_reg);
+            uint8_t reg = allocate_reg(compiler);
+            write_instruction(compiler->chunk, BC_PRINT, reg, arg_reg, 0, 0);
             
             free_reg(compiler, arg_reg);
-            return func_reg;
+            return reg;
         }
         
         case AST_VARIABLE: {
@@ -239,10 +236,8 @@ void compile_growl(BearCompiler* compiler, ASTNode* node) {
     
     uint8_t expr_reg = compile_expression(compiler, node->data.growl_stmt.expression);
     if (compiler->had_error) return;
-    
-    // For now, just pop the value (in real VM, print it)
-    write_instruction(compiler->chunk, BC_POP, expr_reg, 0, 0, 0);
-    free_reg(compiler, expr_reg);
+
+    write_instruction(compiler->chunk, BC_PRINT, expr_reg, 0, 0, 0);
 }
 
 void compile_assign(BearCompiler* compiler, ASTNode* node) {

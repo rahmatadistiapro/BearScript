@@ -1,10 +1,17 @@
 #ifndef BEARCOMPILER_H
 #define BEARCOMPILER_H
+#define MAX_REGISTERS 254
 
+#include <stdint.h>
 #include "bearcode.h"
 #include "ast.h"
 #include "Token.h"
 
+typedef struct {
+    uint8_t registers[MAX_REGISTERS];
+    uint8_t next_free;
+    uint8_t counts;
+} RegisterPool;
 typedef struct {
     BearCodeChunk* chunk;
     uint8_t next_reg;      // Next available register
