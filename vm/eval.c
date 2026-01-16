@@ -1,7 +1,12 @@
-#include "D:/BearScript/include/eval.h"
-#include "D:/BearScript/include/Value.h"
-#include "D:/BearScript/include/symbol_table.h"
+#include "D:\BearScript\include\eval.h"
+#include "D:\BearScript\include\Value.h"
+#include "D:\BearScript\include\Func.h"
+#include "D:\BearScript\include\symbol_table.h"
 #include <string.h>
+
+void growl(const char *message) {
+    printf("%s\n", message);
+}
 
 static bool is_truthy(Value value) {
     if (is_nil(value)) {
@@ -109,7 +114,7 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
-            return value;
+            return growl(as_string(value)), nil_value();
         }
         case AST_IF_STATEMENT: {
             Value condition = eval(node->data.if_stmt.condition, table);

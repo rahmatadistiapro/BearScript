@@ -1,0 +1,12 @@
+PRINT: "Opcode that prints a value", BC_PRINT
+LOADC: "Opcode that loads a constant into a register", BC_LOADC
+LOAD_GLOBAL: "Opcode that loads a global variable into a register", BC_LOAD_GLOBAL
+STORE_CONST: "Opcode that stores a register value into a constant pool", BC_STORE_CONST
+STORE_GLOBAL: "Opcode that stores a register value into a global variable", BC_STORE_GLOBAL
+MOV: "Opcode that moves data between registers example: MOV R0, R1 it moves the value from R1 to R0", BC_MOV
+POP: "Opcode that pops(deletes) a value from the stack into a register", BC_POP
+ADD: "Opcode that adds two registers and stores the result in a register", BC_ADD
+SUB: "Opcode that subtracts one register from another and stores the result in a register", BC_SUB
+MAUL: "Opcode that multiplies two registers and stores the result in a register", BC_MAUL
+DIV: "Opcode that divides one register by another and stores the result in a register", BC_DIV
+HALT: "Opcode that halts(stops) the execution of the program", BC_HALT

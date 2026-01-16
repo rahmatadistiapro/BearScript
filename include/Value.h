@@ -10,8 +10,7 @@ typedef enum {
     VALUE_BOOLEAN,
     VALUE_NIL,
     VALUE_ERROR
-} ValueType;
-
+} ValueType; // Forward declaration
 typedef struct {
     ValueType type;
     union {

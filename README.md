@@ -31,10 +31,11 @@ Most programming languages are created for:
 
 | BearScript Feature | The Fun Part | The Practical Skill You Learn |
 |-------------------|--------------|-------------------------------|
-| `growl 5` | The bear "growls" your output | Using `print()`/`console.log()` |
+| `growl(5)` | The bear "growls" your output | Using `print()`/`console.log()` |
 | `a = 5` → `a: int = 5` | Start simple, unlock complexity | Dynamic vs. static typing |
-| `let age: int = 5` (future) | Values that don't change | Immutable variables (like in Rust) |
-| `whisper()` (future) | Gentle error messages | Error handling and debugging |
+| `let age: int = 5` | Values that don't change | Immutable variables (like in Rust) |
+| `whisper() (future)` | Gentle error messages | Error handling and debugging |
+| `if condition code block honey (future)` | seeing the machine decide | control flow \
 
 ## Quick Start
 
@@ -46,7 +47,7 @@ gcc -o bearscript [your source files]
 
 # Start the interactive interpreter
 ./bearscript
->>> growl "Hello, Forest!"
+>>> growl("Hello, Forest!")
 Hello, Forest!
 
 # Run a BearScript file
@@ -54,10 +55,10 @@ Hello, Forest!
 
 ```
 ## Language Goals
-- **Be fun** - Because learning should spark joy  
+- **Be fun** - Because learning should spark joy
 - **Be helpful** - Every concept teaches something real
 - **Make people laugh** - With bear-themed surprises
-- **Teach about coding** - How languages work under the hood  
+- **Teach about coding** - How languages work under the hood
 - **Make people have a great day** - While building real skills
 
 ## The Story Behind the Name

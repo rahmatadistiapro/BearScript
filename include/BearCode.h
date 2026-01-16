@@ -18,7 +18,7 @@ typedef enum {
 
 typedef enum {
     // load/store operations
-    BC_LOAD_CONST = 0X01, // rX, const_index
+    BC_LOADC = 0X01, // rX, const_index
     BC_LOAD_GLOBAL = 0X02, // rX, global_index
     BC_STORE_CONST = 0X03, // rX, const_index
 
@@ -81,7 +81,7 @@ typedef enum {
     BC_RET = 0X41, // rX
 
     // stack operations
-    BC_MOVE = 0X50, // rX
+    BC_MOV = 0X50, // rX, rY
     BC_POP = 0X51, // rX
 
     // other operations

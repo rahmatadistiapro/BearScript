@@ -62,14 +62,14 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             // Convert long to double for constant pool
             double value = (double)expr->data.value.int_val;
             int const_idx = add_constant(compiler->chunk, value);
-            write_instruction(compiler->chunk, BC_LOAD_CONST, reg, const_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_LOADC, reg, const_idx, 0, 0);
             return reg;
         }
         
         case AST_FLOAT: {
             uint8_t reg = allocate_reg(compiler);
             int const_idx = add_constant(compiler->chunk, expr->data.value.float_val);
-            write_instruction(compiler->chunk, BC_LOAD_CONST, reg, const_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_LOADC, reg, const_idx, 0, 0);
             return reg;
         }
         
@@ -85,7 +85,7 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             uint8_t reg = allocate_reg(compiler);
             double value = expr->data.value.int_val ? 1.0 : 0.0;
             int const_idx = add_constant(compiler->chunk, value);
-            write_instruction(compiler->chunk, BC_LOAD_CONST, reg, const_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_LOADC, reg, const_idx, 0, 0);
             return reg;
         }
 
@@ -110,7 +110,7 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
                 // Variable exists - load from its register
                 uint8_t target_reg = allocate_reg(compiler);
                 uint8_t source_reg = compiler->symbols.regs[sym_idx];
-                write_instruction(compiler->chunk, BC_MOVE, target_reg, source_reg, 0, 0);
+                write_instruction(compiler->chunk, BC_MOV, target_reg, source_reg, 0, 0);
                 return target_reg;
             } else {
                 // Undefined variable - treat as global

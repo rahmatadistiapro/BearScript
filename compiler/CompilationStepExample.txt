@@ -11,4 +11,4 @@ ASSIGN {
 }
 
 Future Register-Based Bytecode(by Compiler):
-LOAD_CONST R0, "John"
+LOADC R0, "John"
