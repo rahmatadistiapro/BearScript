@@ -12,3 +12,29 @@ ASSIGN {
 
 Future Register-Based Bytecode(by Compiler):
 LOADC R0, "John"
+
+Source:
+result = 42 + 58
+growl("Computation complete!")
+
+Tokens(by Lexer):
+IDENTIFIER(result), ASSIGN(=), NUMBER(42), PLUS(+), NUMBER(58) NEWLINE,
+GROWL(growl), LPAREN(()), STRING("Computation complete!"), RPAREN(), NEWLINE
+
+AST(by Parser):
+ASSIGN {
+    var_name: "result",
+    value: BINARY_OP {
+        left: NUMBER(42),
+        operator: PLUS,
+        right: NUMBER(58)
+    }
+}
+
+GROWL {
+    expression: STRING("Computation complete!")
+}
+
+Future Register-Based Bytecode(by Compiler):
+ADD R0, 42, 58 // adds the constants 42 and 58, stores in R0
+PRINT "Computation complete!"
