@@ -112,23 +112,8 @@ Value eval(ASTNode* node, SymbolTable* table) {
                 return error_value(_strdup("Unknown type, did you mean: 'str', 'int', or 'float'?"));
             }
         }
-        case AST_GROWL_STATEMENT: {
-            Value value = eval(node->data.growl_stmt.expression, table);
-            if (is_string(value)) {
-                growl(as_string(value));
-            } else if (is_integer(value)) {
-                char buffer[32];
-                sprintf(buffer, "%ld", as_integer(value));
-                growl(buffer);
-            } else if (is_float(value)) {
-                char buffer[32];
-                sprintf(buffer, "%f", as_float(value));
-                growl(buffer);
-            } else {
-                growl("Unsupported type for growl\n");
-            }
-        }
         case AST_IF_STATEMENT: {
+            printf("Evaluating if statement\n");
             Value condition = eval(node->data.if_stmt.condition, table);
             if (is_error(condition)) {
                 return condition;
@@ -209,6 +194,65 @@ Value eval(ASTNode* node, SymbolTable* table) {
         case AST_ELSE_STATEMENT: {
             return error_value(_strdup("Unexpected Else, else without if, or elif first"));
         }
+        case AST_COMPARE_OP: {
+            Value left = eval(node->data.compare_op.left, table);
+            Value right = eval(node->data.compare_op.right, table);
+
+            if (is_error(left)) {
+                free_value(right);
+                return left;
+            }
+            if (is_error(right)) {
+                free_value(right);
+                return right;
+            }
+
+            if (is_number(left) && is_number(right)) {
+                double l = is_integer(left) ? (double)as_integer(left) : as_float(left);
+                double r = is_integer(right) ? (double)as_integer(right) : as_float(right);
+
+                switch (node->data.compare_op.op) {
+                    case T_EQUAL:  return boolean_value(l == r);
+                    case T_NOTEQ: return boolean_value(l != r);
+                    case T_LT:  return boolean_value(l < r);
+                    case T_LTOREQ: return boolean_value(l <= r);
+                    case T_GT:  return boolean_value(l > r);
+                    case T_GTOREQ: return boolean_value(l >= r);
+                    default:    return error_value(_strdup("Unknown comparison operator"));
+                }
+            }
+            else if (is_string(left) && is_string(right)) {
+                int cmp = strcmp(as_string(left), as_string(right));
+                switch (node->data.compare_op.op) {
+                    case T_EQUAL:  return boolean_value(cmp == 0);
+                    case T_NOTEQ: return boolean_value(cmp != 0);
+                    case T_LT:  return boolean_value(cmp < 0);
+                    case T_LTOREQ: return boolean_value(cmp <= 0);
+                    case T_GT:  return boolean_value(cmp > 0);
+                    case T_GTOREQ: return boolean_value(cmp >= 0);
+                    default:    return error_value(_strdup("Unknown comparison operator"));
+                }
+            }
+            else {
+                return error_value(_strdup("Type mismatch in comparison operation"));
+            }
+        }
+        case AST_GROWL_STATEMENT: {
+            Value value = eval(node->data.growl_stmt.expression, table);
+            if (is_string(value)) {
+                growl(as_string(value));
+            } else if (is_integer(value)) {
+                char buffer[32];
+                sprintf(buffer, "%ld", as_integer(value));
+                growl(buffer);
+            } else if (is_float(value)) {
+                char buffer[32];
+                sprintf(buffer, "%f", as_float(value));
+                growl(buffer);
+            } else {
+                growl("Unsupported type for growl\n");
+            }
+        }
         case AST_BINARY_OP: {
             Value left = eval(node->data.binary_op.left, table);
             Value right = eval(node->data.binary_op.right, table);
@@ -263,49 +307,6 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         default: {
             return error_value(_strdup("Unknown keyword"));
-        }
-        case AST_COMPARE_OP: {
-            Value left = eval(node->data.compare_op.left, table);
-            Value right = eval(node->data.compare_op.right, table);
-
-            if (is_error(left)) {
-                free_value(right);
-                return left;
-            }
-            if (is_error(right)) {
-                free_value(right);
-                return right;
-            }
-
-            if (is_number(left) && is_number(right)) {
-                double l = is_integer(left) ? (double)as_integer(left) : as_float(left);
-                double r = is_integer(right) ? (double)as_integer(right) : as_float(right);
-
-                switch (node->data.compare_op.op) {
-                    case T_EQUAL:  return boolean_value(l == r);
-                    case T_NOTEQ: return boolean_value(l != r);
-                    case T_LT:  return boolean_value(l < r);
-                    case T_LTOREQ: return boolean_value(l <= r);
-                    case T_GT:  return boolean_value(l > r);
-                    case T_GTOREQ: return boolean_value(l >= r);
-                    default:    return error_value(_strdup("Unknown comparison operator"));
-                }
-            }
-            else if (is_string(left) && is_string(right)) {
-                int cmp = strcmp(as_string(left), as_string(right));
-                switch (node->data.compare_op.op) {
-                    case T_EQUAL:  return boolean_value(cmp == 0);
-                    case T_NOTEQ: return boolean_value(cmp != 0);
-                    case T_LT:  return boolean_value(cmp < 0);
-                    case T_LTOREQ: return boolean_value(cmp <= 0);
-                    case T_GT:  return boolean_value(cmp > 0);
-                    case T_GTOREQ: return boolean_value(cmp >= 0);
-                    default:    return error_value(_strdup("Unknown comparison operator"));
-                }
-            }
-            else {
-                return error_value(_strdup("Type mismatch in comparison operation"));
-            }
         }
     }
 }

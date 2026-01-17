@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
             if (!fgets(input, sizeof(input), stdin))
             {
                 printf("\n");
+                printf("Exiting BearScript REPL.\n");
                 break;
             }
             
