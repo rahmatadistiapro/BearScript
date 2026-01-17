@@ -45,12 +45,14 @@ growl(message)
 name = "Jake"
 age: int = 30
 name1 = name
+print(7+5*7)
 
 Tokens(by Lexer):
 IDENTIFIER(message), ASSIGN(=), STRING("Hello, World!"), NEWLINE,
-GROWL(growl), LPAREN(()), IDENTIFIER(message), RPAREN(), NEWLINE,
+IDENTIFIER(growl), LPAREN('('), IDENTIFIER(message), RPAREN(')'), NEWLINE,
 IDENTIFIER(name), ASSIGN(=), STRING("Jake"), NEWLINE,
-IDENTIFIER(age), COLON(:), IDENTIFIER(int), ASSIGN(=), NUMBER(30), NEWLINE
+IDENTIFIER(age), COLON(:), IDENTIFIER(int), ASSIGN(=), NUMBER(30), NEWLINE,
+IDENTIFIER(growl), LPAREN('('), NUMBER(7), PLUS(+), NUMBER(5), MULTIPLY(*), NUMBER(7), RPAREN(')'), NEWLINE
 
 AST(by Parser):
 ASSIGN {
@@ -73,9 +75,27 @@ ASSIGN {
     value: INTEGER(30)
 }
 
+GROWL {
+    expression: BINARY_OP {
+        left: INTEGER(7),
+        operator: ADD,
+        right: BINARY_OP {
+            left: INTEGER(5),
+            operator: MULTIPLY,
+            right: INTEGER(7)
+        }
+    }
+}
+
 Future Register-Based Bytecode(by Compiler):
 LOADC R0, "Hello, World!"
 PRINT R0
 LOADC R1, "Jake"
 LOADC R2, 30
 MOV R3, R1
+LOADC R4, 7
+LOADC R5, 5
+LOADC R6, 7
+MUL R7, R5, R6
+ADD R8, R4, R7
+PRINT R8
