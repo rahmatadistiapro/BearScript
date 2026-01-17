@@ -70,6 +70,7 @@ typedef struct ASTNode {
                 long int_val;    // Separate int and float!
                 double float_val;
                 char* str_val;
+                bool bool_val;
             };
         } value;
         struct {           // for variable references

@@ -35,6 +35,9 @@ Value eval(ASTNode* node, SymbolTable* table) {
         case AST_STRING: {
             return string_value(_strdup(node->data.string.str_val));
         }
+        case AST_BOOLEAN: {
+            return boolean_value(node->data.value.bool_val);
+        }
         case AST_VARIABLE: {
             Value value;
             if (!get_variable(table, node->data.variable.var_name, &value)) {
@@ -190,9 +193,11 @@ Value eval(ASTNode* node, SymbolTable* table) {
         case AST_ELIF_STATEMENT: {
             // Elif statements are handled within the if statement case
             return error_value(_strdup("Unexpected Elif, elif without if first"));
+            break;
         }
         case AST_ELSE_STATEMENT: {
             return error_value(_strdup("Unexpected Else, else without if, or elif first"));
+            break;
         }
         case AST_COMPARE_OP: {
             Value left = eval(node->data.compare_op.left, table);
@@ -239,74 +244,141 @@ Value eval(ASTNode* node, SymbolTable* table) {
         }
         case AST_GROWL_STATEMENT: {
             Value value = eval(node->data.growl_stmt.expression, table);
-            if (is_string(value)) {
-                growl(as_string(value));
-            } else if (is_integer(value)) {
-                char buffer[32];
-                sprintf(buffer, "%ld", as_integer(value));
-                growl(buffer);
-            } else if (is_float(value)) {
-                char buffer[32];
-                sprintf(buffer, "%f", as_float(value));
-                growl(buffer);
+            Value result = nil_value();  // Default return value
+    
+            if (!is_error(value)) {
+                if (is_string(value)) {
+                    growl(as_string(value));
+                } else if (is_integer(value)) {
+                    char buffer[32];
+                    sprintf(buffer, "%ld", as_integer(value));
+                    growl(buffer);
+                } else if (is_float(value)) {
+                    char buffer[32];
+                    sprintf(buffer, "%f", as_float(value));
+                    growl(buffer);
+                } else {
+                    growl("Unsupported type for growl\n");
+                }
             } else {
-                growl("Unsupported type for growl\n");
+                // If evaluation returned an error, return it
+                result = value;
+                value = nil_value();  // Don't free error value twice
             }
+    
+            free_value(value);
+            return result;
         }
         case AST_BINARY_OP: {
             Value left = eval(node->data.binary_op.left, table);
             Value right = eval(node->data.binary_op.right, table);
-            
+    
             // Handle number operations
             if (is_integer(left) && is_integer(right)) {
                 long l = as_integer(left);
                 long r = as_integer(right);
-                
+        
+                Value result;
                 switch (node->data.binary_op.op) {
-                    case T_ADD:   { return integer_value(l + r); }
-                    case T_SUBTRACT: { return integer_value(l - r); }
-                    case T_MAUL:     { return integer_value(l * r); }
+                    case T_ADD: {
+                        result = integer_value(l + r);
+                        break;
+                    }
+                    case T_SUBTRACT: {
+                        result = integer_value(l - r);
+                        break;
+                    }
+                    case T_MAUL: {
+                        result = integer_value(l * r);
+                        break;
+                    }
                     case T_DIVIDE: {
-                        if (r == 0) { return error_value(_strdup("cannot do Division by zero")); }
-                        return integer_value(l / r);
+                        if (r == 0) {
+                            free_value(left);
+                            free_value(right);
+                            return error_value(_strdup("cannot do Division by zero"));
+                        }
+                        result = integer_value(l / r);
+                        break;
                     }
                     case T_MODULO: {
-                        if (r == 0) { return error_value(_strdup("cannot do Modulo by zero")); }
-                        return integer_value(l % r);
+                        if (r == 0) {
+                            free_value(left);
+                            free_value(right);
+                            return error_value(_strdup("cannot do Modulo by zero"));
+                        }
+                        result = integer_value(l % r);
+                        break;
                     }
-                    default:         return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
+                    default: {
+                        free_value(left);
+                        free_value(right);
+                        return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
+                    }
                 }
+                free_value(left);
+                free_value(right);
+                return result;
             }
-            if (is_number(left) && is_number(right)) {
+            else if (is_number(left) && is_number(right)) {
                 double l = as_float(left);
                 double r = as_float(right);
-                
+        
+                Value result;
                 switch (node->data.binary_op.op) {
-                    case T_ADD:   { return float_value(l + r); }
-                    case T_SUBTRACT: { return float_value(l - r); }
-                    case T_MAUL:     { return float_value(l * r); }
+                    case T_ADD: {
+                        result = float_value(l + r);
+                        break;
+                    }
+                    case T_SUBTRACT: {
+                        result = float_value(l - r);
+                        break;
+                    }
+                    case T_MAUL: {
+                        result = float_value(l * r);
+                        break;
+                    }
                     case T_DIVIDE: {
-                        if (r == 0) { return error_value(_strdup("cannot do Division by zero")); }
-                        return float_value(l / r);
+                        if (r == 0) {
+                            free_value(left);
+                            free_value(right);
+                            return error_value(_strdup("cannot do Division by zero"));
+                        }
+                        result = float_value(l / r);
+                        break;
                     }
                     case T_MODULO: {
-                        if ((int)r == 0) { return error_value(_strdup("cannot do Modulo by zero")); }
-                        return integer_value((int)l % (int)r);
+                        if ((int)r == 0) {
+                            free_value(left);
+                            free_value(right);
+                            return error_value(_strdup("cannot do Modulo by zero")); 
+                        }
+                        result = integer_value((int)l % (int)r);
+                        break;
                     }
-                    default:         return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
+                    default: {
+                        free_value(left);
+                        free_value(right);
+                        return error_value(_strdup("Unknown operator, did you mean: '+', '-', '*', '/', '%'?"));
+                    }
                 }
+                free_value(left);
+                free_value(right);
+                return result;
             }
-            // Handle string concatenation (future)
+            // Handle string concatenation
             else if (is_string(left) && is_string(right) && node->data.binary_op.op == T_ADD) {
                 // TODO: Implement string concatenation
+                free_value(left);
+                free_value(right);
                 return error_value(_strdup("String concatenation not implemented yet"));
             }
             else {
+                free_value(left);
+                free_value(right);
                 return error_value(_strdup("Type mismatch in operation"));
             }
-        }
-        default: {
-            return error_value(_strdup("Unknown keyword"));
+                break;  // This is good practice
         }
     }
 }
