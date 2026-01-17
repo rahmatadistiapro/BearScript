@@ -35,7 +35,7 @@ Most programming languages are created for:
 | `a = 5` → `a: int = 5` | Start simple, unlock complexity | Dynamic vs. static typing |
 | `let age: int = 5` | Values that don't change | Immutable variables (like in Rust) |
 | `whisper() (future)` | Gentle error messages | Error handling and debugging |
-| `if condition code block honey (future)` | seeing the machine decide | control flow \
+| `if condition code block honey (future)` | seeing the machine decide | control flow |
 
 ## Quick Start
 
