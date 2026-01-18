@@ -1,17 +1,15 @@
-#ifndef BEARCOMPILER_H
-#define BEARCOMPILER_H
-#define MAX_REGISTERS 254
+// compiler.h
+#ifndef __BEARCOMPILER_H
+#define __BEARCOMPILER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "bearcode.h"
-#include "ast.h"
+#include "AST.h"
 #include "Token.h"
 
-typedef struct {
-    uint8_t registers[MAX_REGISTERS];
-    uint8_t next_free;
-    uint8_t counts;
-} RegisterPool;
+#define MAX_REGISTERS 254
+
 typedef struct {
     BearCodeChunk* chunk;
     uint8_t next_reg;      // Next available register
@@ -24,7 +22,7 @@ typedef struct {
         size_t capacity;
     } symbols;
     
-    // Control flow
+    // Control flow (for loops, etc.)
     struct {
         size_t start;      // Loop start
         size_t end;        // Loop end (for break)
@@ -33,15 +31,30 @@ typedef struct {
     } loop;
     
     bool had_error;
+    bool regs_in_use[256]; // Track which registers are used
 } BearCompiler;
 
-// Main API
+// Function prototypes
+void init_compiler(BearCompiler* compiler);
+void free_compiler(BearCompiler* compiler);
 BearCodeChunk* compile_ast_to_bearcode(ASTNode* ast);
+
+// Compilation functions
 void compile_node(BearCompiler* compiler, ASTNode* node);
 uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr);
+void compile_statements(BearCompiler* compiler, ASTNode** statements, int count);
+
+// Specific AST node compilers
 void compile_growl(BearCompiler* compiler, ASTNode* node);
 void compile_if(BearCompiler* compiler, ASTNode* node);
 void compile_elif(BearCompiler* compiler, ASTNode* node);
 void compile_else(BearCompiler* compiler, ASTNode* node);
+void compile_assignment(BearCompiler* compiler, ASTNode* node);
 
-#endif
+// Helper functions
+uint8_t allocate_reg(BearCompiler* compiler);
+void free_reg(BearCompiler* compiler, uint8_t reg);
+int add_symbol(BearCompiler* compiler, const char* name, uint8_t reg);
+int find_symbol(BearCompiler* compiler, const char* name);
+
+#endif // __BEARCOMPILER_H

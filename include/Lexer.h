@@ -1,5 +1,5 @@
-#ifndef LEXER_H
-#define LEXER_H
+#ifndef __LEXER_H
+#define __LEXER_H
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -23,4 +23,4 @@ void make_token(Lexer* lexer, Token* token);
 void advance(Lexer* lexer);
 void skip_whitespace(Lexer* lexer);
 
-#endif // LEXER_H
+#endif // __LEXER_H

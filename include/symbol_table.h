@@ -1,5 +1,5 @@
-#ifndef SYMBOL_TABLE_H
-#define SYMBOL_TABLE_H
+#ifndef __SYMBOL_TABLE_H
+#define __SYMBOL_TABLE_H
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -40,4 +40,4 @@ bool assign_variable(SymbolTable* table,
 );  // Value, not double
 bool get_variable(SymbolTable* table, const char* name, Value* out_value);  // Value*, not double*
 
-#endif // SYMBOL_TABLE_H
+#endif // __SYMBOL_TABLE_H

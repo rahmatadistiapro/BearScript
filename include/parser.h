@@ -1,5 +1,5 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef __PARSER_H
+#define __PARSER_H
 
 #include <stdio.h>
 #include "Token.h"
@@ -34,4 +34,4 @@ ASTNode* parse_comparison(Parser* parser);
 ASTNode** parse_block_until_honey(Parser* parser, int* count);
 ASTNode* parse_line(Parser* parser); // entry point for a single line
 
-#endif // PARSER_H
+#endif // __PARSER_H

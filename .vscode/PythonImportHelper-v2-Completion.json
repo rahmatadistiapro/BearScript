@@ -1,0 +1,20 @@
+[
+    {
+        "label": "dis",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "dis",
+        "description": "dis",
+        "detail": "dis",
+        "documentation": {}
+    },
+    {
+        "label": "dis.dis(\"\"\"result",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "dis.dis(\"\"\"result = 42 + 58\nprint(\"Computation complete!\")\"\"\")",
+        "detail": "main",
+        "documentation": {}
+    }
+]

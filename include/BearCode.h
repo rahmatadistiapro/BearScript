@@ -1,5 +1,5 @@
-#ifndef BEARCODE_H
-#define BEARCODE_H
+#ifndef __BEARCODE_H
+#define __BEARCODE_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -137,4 +137,4 @@ void emit_instruction(BearCodeChunk* chunk, Instruction instr);
 void write_instruction(BearCodeChunk* chunk, uint8_t bearcode, uint8_t reg1,
                         uint8_t reg2, uint8_t reg3, int16_t imm);
 
-#endif  // BEARCODE_H
+#endif  // __BEARCODE_H

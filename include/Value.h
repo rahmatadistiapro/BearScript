@@ -1,5 +1,5 @@
-#ifndef VALUE_H
-#define VALUE_H
+#ifndef __VALUE_H
+#define __VALUE_H
 
 #include <stdbool.h>
 
@@ -50,4 +50,4 @@ bool values_equal(Value a, Value b);
 void free_value(Value value);
 Value copy_value(Value original);
 
-#endif // VALUE_H
+#endif // __VALUE_H

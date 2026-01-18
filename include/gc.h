@@ -1,5 +1,5 @@
-#ifndef GC_H
-#define GC_H
+#ifndef __GC_H
+#define __GC_H
 
 #include "AST.h"
 
@@ -11,4 +11,4 @@ typedef struct {
 
 void gc_free_ast(ASTNode* node);
 
-#endif // GC_H
+#endif // __GC_H

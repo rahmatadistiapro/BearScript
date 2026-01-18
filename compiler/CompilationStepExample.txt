@@ -13,6 +13,20 @@ ASSIGN {
 Future Register-Based Bytecode(by Compiler):
 LOADC R0, "John"
 
+Pythons Stack-Based Bytecode comparison(by CPython):
+  0           0 RESUME                   0
+
+  1           2 LOAD_CONST               0 ('John')
+              4 STORE_NAME               0 (name)
+              6 RETURN_CONST             1 (None)
+
+Java Stack-Based Bytecode comparison(by JVM):
+public void setName();
+  Code:
+     0: ldc           #2      // String John (Load "John" from constant pool)
+     2: astore_1              // Store into local variable 1 (name)
+     3: return                // Return void (Equivalent to Return None)
+
 Source:
 result = 42 + 58
 growl("Computation complete!")
@@ -36,8 +50,35 @@ GROWL {
 }
 
 Future Register-Based Bytecode(by Compiler):
-ADD R0, 42, 58 // adds the constants 42 and 58, stores in R0
+ADD R0, #1, #2 // 42, 58 adds the constants 42 and 58, stores in R0
 PRINT "Computation complete!"
+
+Pythons Stack-Based Bytecode comparison(by CPython):
+  0           0 RESUME                   0
+
+  1           2 LOAD_CONST               0 (100)
+              4 STORE_NAME               0 (result)
+
+  2           6 PUSH_NULL
+              8 LOAD_NAME                1 (print)
+             10 LOAD_CONST               1 ('Computation complete!')
+             12 CALL                     1
+             20 POP_TOP
+             22 RETURN_CONST             2 (None)
+
+Java Stack-Based Bytecode comparison(by JVM):
+public static void main(java.lang.String[]);
+  Code:
+     // result = 100
+     0: bipush        100      // Push int constant 100 onto stack
+     2: istore_1               // Store in local variable 1 (result)
+
+     // System.out.println("Computation complete!")
+     3: getstatic     #2       // Field java/lang/System.out:Ljava/io/PrintStream;
+     6: ldc           #3       // String Computation complete!
+     8: invokevirtual #4       // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+
+     11: return                // Exit method
 
 Source:
 message = "Hello, World!"
@@ -45,7 +86,7 @@ growl(message)
 name = "Jake"
 age: int = 30
 name1 = name
-print(7+5*7)
+growl(7+5*7)
 
 Tokens(by Lexer):
 IDENTIFIER(message), ASSIGN(=), STRING("Hello, World!"), NEWLINE,
@@ -88,14 +129,78 @@ GROWL {
 }
 
 Future Register-Based Bytecode(by Compiler):
-LOADC R0, "Hello, World!"
+LOADC R0, #0 // "Hello, World!"
 PRINT R0
-LOADC R1, "Jake"
-LOADC R2, 30
+LOADC R1, #1 // "Jake"
+LOADC R2, #2 // 30
 MOV R3, R1
-LOADC R4, 7
-LOADC R5, 5
-LOADC R6, 7
+LOADC R4, #3 // 7
+LOADC R5, #4 // 5
+LOADC R6, #5 // 7
 MUL R7, R5, R6
 ADD R8, R4, R7
 PRINT R8
+
+Pythons Stack-Based Bytecode comparison(by CPython):
+ 0           0 RESUME                   0
+
+  1           2 SETUP_ANNOTATIONS
+              4 LOAD_CONST               0 ('Hello, World!')
+              6 STORE_NAME               0 (message)
+
+  2           8 PUSH_NULL
+             10 LOAD_NAME                1 (print)
+             12 LOAD_NAME                0 (message)
+             14 CALL                     1
+             22 POP_TOP
+
+  3          24 LOAD_CONST               1 ('Jake')
+             26 STORE_NAME               2 (name)
+
+  4          28 LOAD_CONST               2 (30)
+             30 STORE_NAME               3 (age)
+             32 LOAD_NAME                4 (int)
+             34 LOAD_NAME                5 (__annotations__)
+             36 LOAD_CONST               3 ('age')
+             38 STORE_SUBSCR
+
+  5          42 LOAD_NAME                2 (name)
+             44 STORE_NAME               6 (name1)
+
+  6          46 PUSH_NULL
+             48 LOAD_NAME                1 (print)
+             50 LOAD_CONST               4 (42)
+             52 CALL                     1
+             60 POP_TOP
+             62 RETURN_CONST             5 (None)
+
+Java Stack-Based Bytecode comparison(by JVM):
+public static void main(java.lang.String[]);
+  Code:
+     // message = "Hello, World!"
+     0: ldc           #2      // String Hello, World!
+     2: astore_1              // Store in local variable 1 (message)
+
+     // System.out.println(message)
+     3: getstatic     #3      // Field java/lang/System.out:Ljava/io/PrintStream;
+     6: aload_1               // Load local variable 1
+     7: invokevirtual #4      // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+
+     // name = "Jake"
+     10: ldc           #5      // String Jake
+     12: astore_2              // Store in local variable 2 (name)
+
+     // age = 30
+     13: bipush        30
+     15: istore_3              // Store in local variable 3 (age)
+
+     // name1 = name
+     16: aload_2
+     17: astore        4       // Store in local variable 4 (name1)
+
+     // System.out.println(7 + 5 * 7)
+     19: getstatic     #3      // Field java/lang/System.out:Ljava/io/PrintStream;
+     22: bipush        42      // Constant folding: result of 7+5*7 computed at compile-time
+     24: invokevirtual #6      // Method java/io/PrintStream.println:(I)V
+
+     27: return

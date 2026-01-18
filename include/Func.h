@@ -1,5 +1,5 @@
-#ifndef FUNC_H
-#define FUNC_H
+#ifndef __FUNC_H
+#define __FUNC_H
 
 #include <stdio.h>
 #include "Value.h"
@@ -9,4 +9,4 @@ typedef struct {
 } Func;
 void growl(const char* message);
 
-#endif // FUNC_H
+#endif // __FUNC_H

@@ -1,5 +1,5 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef __TOKEN_H
+#define __TOKEN_H
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -40,4 +40,4 @@ typedef struct {
     char* value;
 } Token;
 
-#endif
+#endif // __TOKEN_H

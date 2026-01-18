@@ -1,5 +1,5 @@
-#ifndef AST_H
-#define AST_H
+#ifndef __AST_H
+#define __AST_H
 
 #include "Token.h"
 #include <stdbool.h>
@@ -90,4 +90,4 @@ typedef struct ASTNode {
     } data;  // Give the union a name!
 } ASTNode;
 
-#endif // AST_H
+#endif // __AST_H
