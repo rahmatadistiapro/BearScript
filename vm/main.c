@@ -1,5 +1,7 @@
 #include "D:/BearScript/include/Lexer.h"
 #include "D:/BearScript/include/parser.h"
+#include "D:/BearScript/include/AST.h"
+#include "D:/BearScript/include/Compiler.h"
 #include "D:/BearScript/include/eval.h"
 #include "D:/BearScript/include/symbol_table.h"
 #include "D:/BearScript/include/gc.h"
@@ -15,6 +17,21 @@ Value interpret(const char* line, SymbolTable* table) {
     parser_init(&parser, &lexer, table);
     
     ASTNode* tree = parse_line(&parser);
+
+    if (tree) {
+        BearCodeChunk* chunk = compile_ast_to_bearcode(tree);
+
+        if (chunk) {
+            printf("Compilation successful!\n");
+            printf("Generated %zu bytecode instructions\n", chunk->count);
+
+            debug_disassemble_chunk(chunk);
+            free_bearcode_chunk(chunk);
+        } else {
+            printf("Compilation failed!\n");
+        }
+        gc_free_ast(tree);
+    }
     Value result = eval(tree, table);
 
     Value result_copy = copy_value(result);

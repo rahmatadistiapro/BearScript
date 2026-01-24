@@ -1,19 +1,45 @@
 [
     {
-        "label": "dis",
-        "kind": 6,
+        "label": "Bytecode",
+        "importPath": "Bytecode",
+        "description": "Bytecode",
         "isExtraImport": true,
-        "importPath": "dis",
-        "description": "dis",
-        "detail": "dis",
+        "detail": "Bytecode",
         "documentation": {}
     },
     {
-        "label": "dis.dis(\"\"\"result",
+        "label": "Bytecode",
+        "kind": 6,
+        "importPath": "Bytecode",
+        "description": "Bytecode",
+        "peekOfCode": "class Bytecode:\n    def PUSH(self, value, stack):\n        return stack.append(value)\n    def POP(self, stack):\n        if stack == dict():\n            if not stack:\n                raise IndexError(\"POP from empty stack\")\n            return stack.pop(stack[-1])\n        if stack == list():\n            if not stack:",
+        "detail": "Bytecode",
+        "documentation": {}
+    },
+    {
+        "label": "stack",
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "dis.dis(\"\"\"result = 42 + 58\nprint(\"Computation complete!\")\"\"\")",
+        "peekOfCode": "stack = []\nvariables = {}\nbytecode = Bytecode()\nbytecode.PUSH(10, stack)\nprint(stack)\nprint(bytecode.STORE(\"a\", stack, variables))\nprint(stack)\nbytecode.CALL(\"PRINT\", variables[\"a\"])\nbytecode.PUSH(20, stack)\nprint(stack)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "variables",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "variables = {}\nbytecode = Bytecode()\nbytecode.PUSH(10, stack)\nprint(stack)\nprint(bytecode.STORE(\"a\", stack, variables))\nprint(stack)\nbytecode.CALL(\"PRINT\", variables[\"a\"])\nbytecode.PUSH(20, stack)\nprint(stack)\nbytecode.CALL(\"PRINT\", bytecode.ADD(stack))",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "bytecode",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "bytecode = Bytecode()\nbytecode.PUSH(10, stack)\nprint(stack)\nprint(bytecode.STORE(\"a\", stack, variables))\nprint(stack)\nbytecode.CALL(\"PRINT\", variables[\"a\"])\nbytecode.PUSH(20, stack)\nprint(stack)\nbytecode.CALL(\"PRINT\", bytecode.ADD(stack))",
         "detail": "main",
         "documentation": {}
     }

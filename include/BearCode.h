@@ -80,7 +80,7 @@ typedef enum {
     BC_CALL = 0X40, // function_index, arg_count
     BC_RET = 0X41, // rX
 
-    // stack operations
+    // register-based bytecode disguised as stack operations
     BC_MOV = 0X50, // rX, rY
     BC_POP = 0X51, // rX
 

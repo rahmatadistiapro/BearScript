@@ -8,7 +8,7 @@
 #include "AST.h"
 #include "Token.h"
 
-#define MAX_REGISTERS 254
+#define __MAX_REGISTERS 254
 
 typedef struct {
     BearCodeChunk* chunk;
@@ -50,6 +50,7 @@ void compile_if(BearCompiler* compiler, ASTNode* node);
 void compile_elif(BearCompiler* compiler, ASTNode* node);
 void compile_else(BearCompiler* compiler, ASTNode* node);
 void compile_assignment(BearCompiler* compiler, ASTNode* node);
+void debug_disassemble_chunk(BearCodeChunk* chunk);
 
 // Helper functions
 uint8_t allocate_reg(BearCompiler* compiler);

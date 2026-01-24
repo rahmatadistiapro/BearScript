@@ -46,7 +46,7 @@ void free_compiler(BearCompiler* compiler) {
 
 uint8_t allocate_reg(BearCompiler* compiler) {
     // Simple linear allocation
-    for (uint8_t i = 0; i < MAX_REGISTERS; i++) {
+    for (uint8_t i = 0; i < __MAX_REGISTERS; i++) {
         if (!compiler->regs_in_use[i]) {
             compiler->regs_in_use[i] = true;
             if (i >= compiler->next_reg) {
@@ -62,7 +62,7 @@ uint8_t allocate_reg(BearCompiler* compiler) {
 }
 
 void free_reg(BearCompiler* compiler, uint8_t reg) {
-    if (reg < MAX_REGISTERS) {
+    if (reg < __MAX_REGISTERS) {
         compiler->regs_in_use[reg] = false;
         if (reg < compiler->next_reg) {
             compiler->next_reg = reg;
@@ -307,4 +307,42 @@ BearCodeChunk* compile_ast_to_bearcode(ASTNode* ast) {
     free_compiler(&compiler);
     
     return chunk;
+}
+
+void debug_disassemble_chunk(BearCodeChunk* chunk) {
+    printf("=== DISASSEMBLY ===\n");
+    printf("Instructions: %zu\n", chunk->count);
+    printf("Constants: %zu\n", chunk->const_count);
+    
+    for (size_t i = 0; i < chunk->const_count; i++) {
+        printf("  Constant #%zu = %f\n", i, chunk->constants[i]);
+    }
+    
+    for (size_t i = 0; i < chunk->count; i++) {
+        Instruction instr = chunk->code[i];
+        const char* opname = "UNKNOWN";
+        
+        switch (instr.bearcode) {
+            case BC_LOADC: opname = "LOADC"; break;
+            case BC_ADD: opname = "ADD"; break;
+            case BC_SUB: opname = "SUB"; break;
+            case BC_MAUL: opname = "MAUL"; break;
+            case BC_DIV: opname = "DIV"; break;
+            case BC_PRINT: opname = "PRINT"; break;
+            case BC_MOV: opname = "MOV"; break;
+            case BC_HALT: opname = "HALT"; break;
+        }
+        
+        printf("  [%zu] %s r%d, ", i, opname, instr.reg1);
+        
+        if (instr.bearcode == BC_LOADC) {
+            printf("#%d (value=%f)", instr.reg2, 
+                   instr.reg2 < chunk->const_count ? chunk->constants[instr.reg2] : 0.0);
+        } else if (instr.bearcode == BC_ADD || instr.bearcode == BC_SUB || 
+                   instr.bearcode == BC_MAUL || instr.bearcode == BC_DIV) {
+            printf("r%d, r%d", instr.reg2, instr.reg3);
+        }
+        
+        printf("\n");
+    }
 }
