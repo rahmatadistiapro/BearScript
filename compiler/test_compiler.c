@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 int main() {
-    // Use your parser to create AST
-    const char* source = "x = 7";
+    // Use parser to create AST
+    const char* source = "x = 5.2+3.1";
     
     Lexer lexer;
     lexer_init(&lexer, source);

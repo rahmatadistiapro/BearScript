@@ -1,3 +1,4 @@
+// Emitter.c
 #include "D:/BearScript/include/BearCode.h"
 #include <stddef.h>
 #include <stdint.h>

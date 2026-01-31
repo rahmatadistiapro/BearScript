@@ -1,4 +1,4 @@
-// compiler.c
+// Compiler.c
 #include "D:\BearScript\include\Compiler.h"
 #include <stdlib.h>
 #include <string.h>
@@ -119,14 +119,14 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             uint8_t reg = allocate_reg(compiler);
             double value = (double)expr->data.value.int_val;
             int const_idx = add_constant(compiler->chunk, value);
-            write_instruction(compiler->chunk, BC_LOADC, reg, const_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_LOADC, reg, 0, 0, const_idx);
             return reg;
         }
         
         case AST_FLOAT: {
             uint8_t reg = allocate_reg(compiler);
             int const_idx = add_constant(compiler->chunk, expr->data.value.float_val);
-            write_instruction(compiler->chunk, BC_LOADC, reg, const_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_LOADC, reg, 0, 0, const_idx);
             return reg;
         }
         
@@ -299,7 +299,7 @@ BearCodeChunk* compile_ast_to_bearcode(ASTNode* ast) {
     }
     
     // Add HALT instruction at the end
-    write_instruction(compiler.chunk, BC_HALT, 0, 0, 0, 0);
+    write_instruction(compiler.chunk, BC_HALT, 2, 0, 0, 0);
     
     BearCodeChunk* chunk = compiler.chunk;
     // Don't free the chunk - it's being returned
@@ -336,8 +336,8 @@ void debug_disassemble_chunk(BearCodeChunk* chunk) {
         printf("  [%zu] %s r%d, ", i, opname, instr.reg1);
         
         if (instr.bearcode == BC_LOADC) {
-            printf("#%d (value=%f)", instr.reg2, 
-                   instr.reg2 < chunk->const_count ? chunk->constants[instr.reg2] : 0.0);
+            printf("#%d (value=%f)", instr.immediate,
+                   instr.immediate < chunk->const_count ? chunk->constants[instr.immediate] : 0.0);
         } else if (instr.bearcode == BC_ADD || instr.bearcode == BC_SUB || 
                    instr.bearcode == BC_MAUL || instr.bearcode == BC_DIV) {
             printf("r%d, r%d", instr.reg2, instr.reg3);
