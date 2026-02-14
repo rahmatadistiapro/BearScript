@@ -54,6 +54,18 @@ double BVM(BearCodeChunk* chunk, SymbolTable* table) {
                 printf("LOADC r%d = %f\n", current->reg1, last_result);
                 break;
             }
+            case BC_LOAD_GLOBAL: {
+                int global_index = (int)current->reg2; // Using reg2 for global index
+                if (global_index < 0 || global_index >= chunk->global_count) {
+                    printf("Error: Invalid global index %d\n", global_index);
+                    return 0;
+                }
+                __CHECK_REG(current->reg1);
+                registers[current->reg1] = 0; // Placeholder for global value
+                last_result = registers[current->reg1];
+                printf("LOAD_GLOBAL r%d = '%s' (placeholder value)\n", current->reg1, chunk->globals[global_index]);
+                break;
+            }
             case BC_ADD: {
                 __CHECK_REG(current->reg1);
                 __CHECK_REG(current->reg2);
@@ -124,6 +136,7 @@ double BVM(BearCodeChunk* chunk, SymbolTable* table) {
             }
             case BC_PRINT: {
                 __CHECK_REG(current->reg1);
+                printf("PRINT r%d = %f\n", current->reg1, registers[current->reg1]);
                 double value = registers[current->reg1];
                 printf("PRINT: %f\n", value);
                 last_result = value;

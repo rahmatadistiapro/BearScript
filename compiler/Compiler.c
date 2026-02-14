@@ -74,7 +74,7 @@ int add_symbol(BearCompiler* compiler, const char* name, uint8_t reg) {
     // Check if symbol already exists
     for (size_t i = 0; i < compiler->symbols.count; i++) {
         if (strcmp(compiler->symbols.names[i], name) == 0) {
-            // Update existing symbol
+            free_reg(compiler, compiler->symbols.regs[i]);
             compiler->symbols.regs[i] = reg;
             return i;
         }
@@ -84,12 +84,12 @@ int add_symbol(BearCompiler* compiler, const char* name, uint8_t reg) {
     if (compiler->symbols.count >= compiler->symbols.capacity) {
         size_t new_capacity = compiler->symbols.capacity * 2;
         char** new_names = realloc(compiler->symbols.names, new_capacity * sizeof(char*));
+        if (!new_names) {
+            goto oom;
+        }
         uint8_t* new_regs = realloc(compiler->symbols.regs, new_capacity * sizeof(uint8_t));
-        
-        if (!new_names || !new_regs) {
-            fprintf(stderr, "Compiler error: Out of memory for symbol table\n");
-            compiler->had_error = true;
-            return -1;
+        if (!new_regs) {
+            goto oom;
         }
         
         compiler->symbols.names = new_names;
@@ -98,8 +98,17 @@ int add_symbol(BearCompiler* compiler, const char* name, uint8_t reg) {
     }
     
     compiler->symbols.names[compiler->symbols.count] = strdup(name);
+    if (!compiler->symbols.names[compiler->symbols.count]) {
+        fprintf(stderr, "Compiler error: Out of memory for symbol name\n");
+        compiler->had_error = true;
+        return -1;
+    }
     compiler->symbols.regs[compiler->symbols.count] = reg;
     return compiler->symbols.count++;
+    oom:
+    fprintf(stderr, "Compiler error: Out of memory for symbol table\n");
+    compiler->had_error = true;
+    return -1;
 }
 
 int find_symbol(BearCompiler* compiler, const char* name) {
@@ -117,6 +126,7 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
     switch (expr->type) {
         case AST_INTEGER: {
             uint8_t reg = allocate_reg(compiler);
+            if (compiler->had_error) return 255;
             double value = (double)expr->data.value.int_val;
             int const_idx = add_constant(compiler->chunk, value);
             write_instruction(compiler->chunk, BC_LOADC, reg, 0, 0, const_idx);
@@ -125,23 +135,26 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
         
         case AST_FLOAT: {
             uint8_t reg = allocate_reg(compiler);
-            int const_idx = add_constant(compiler->chunk, expr->data.value.float_val);
-            write_instruction(compiler->chunk, BC_LOADC, reg, 0, 0, const_idx);
+            if (compiler->had_error) return 255;
+            int constant_idx = add_constant(compiler->chunk, expr->data.value.float_val);
+            write_instruction(compiler->chunk, BC_LOADC, reg, 0, 0, constant_idx);
             return reg;
         }
         
         case AST_STRING: {
             uint8_t reg = allocate_reg(compiler);
+            if (compiler->had_error) return 255;
             int global_idx = add_global(compiler->chunk, expr->data.string.str_val);
             write_instruction(compiler->chunk, BC_LOAD_GLOBAL, reg, global_idx, 0, 0);
             return reg;
         }
-        
+
         case AST_BOOLEAN: {
             uint8_t reg = allocate_reg(compiler);
+            if (compiler->had_error) return 255;
             double value = expr->data.value.int_val ? 1.0 : 0.0;
             int const_idx = add_constant(compiler->chunk, value);
-            write_instruction(compiler->chunk, BC_LOADC, reg, const_idx, 0, 0);
+            write_instruction(compiler->chunk, BC_LOADC, reg, 0, 0, const_idx);
             return reg;
         }
 
@@ -150,12 +163,14 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             if (sym_idx >= 0) {
                 // Variable exists - load from its register
                 uint8_t target_reg = allocate_reg(compiler);
+                if (compiler->had_error) return 255;
                 uint8_t source_reg = compiler->symbols.regs[sym_idx];
                 write_instruction(compiler->chunk, BC_MOV, target_reg, source_reg, 0, 0);
                 return target_reg;
             } else {
                 // Undefined variable - treat as global
                 uint8_t reg = allocate_reg(compiler);
+                if (compiler->had_error) return 255;
                 int global_idx = add_global(compiler->chunk, expr->data.variable.var_name);
                 write_instruction(compiler->chunk, BC_LOAD_GLOBAL, reg, global_idx, 0, 0);
                 return reg;
@@ -173,7 +188,12 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             }
             
             uint8_t result_reg = allocate_reg(compiler);
-            
+            if (compiler->had_error) {
+                free_reg(compiler, left_reg);
+                free_reg(compiler, right_reg);
+                return 255;
+            }
+
             BearCode opcode;
             switch (expr->data.binary_op.op) {
                 case T_ADD: opcode = BC_ADD; break;
@@ -207,7 +227,12 @@ uint8_t compile_expression(BearCompiler* compiler, ASTNode* expr) {
             }
             
             uint8_t result_reg = allocate_reg(compiler);
-            
+            if (compiler->had_error) {
+                free_reg(compiler, left_reg);
+                free_reg(compiler, right_reg);
+                return 255;
+            }
+
             BearCode opcode;
             switch (expr->data.compare_op.op) {
                 case T_EQUAL: opcode = BC_EQ; break;
@@ -299,7 +324,7 @@ BearCodeChunk* compile_ast_to_bearcode(ASTNode* ast) {
     }
     
     // Add HALT instruction at the end
-    write_instruction(compiler.chunk, BC_HALT, 2, 0, 0, 0);
+    write_instruction(compiler.chunk, BC_HALT, 0, 0, 0, 0);
     
     BearCodeChunk* chunk = compiler.chunk;
     // Don't free the chunk - it's being returned

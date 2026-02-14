@@ -7,7 +7,7 @@
 
 int main() {
     // Use parser to create AST
-    const char* source = "x = 5.2+3.1";
+    const char* source = "growl('Hdllo, World!')";
     
     Lexer lexer;
     lexer_init(&lexer, source);
